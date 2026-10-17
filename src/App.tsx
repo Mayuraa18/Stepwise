@@ -1,532 +1,526 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { Language, VisualStep, Problem } from "./engine/types";
 import "./App.css";
 
-type Step = {
-  line: number;
-  currentIndex: number | null;
-  complement: number | null;
-  seen: Record<string, number>;
-  result: number[] | null;
-  title: string;
-  explanation: string;
-};
 
-type Language = "Python" | "C++" | "Java";
+function step(
 
-type TestCase = {
-  id: string;
-  label: string;
-  nums: number[];
-  target: number;
-  steps: Step[];
-};
+  title: string, explanation: string, line: number, pseudocodeLine: number,
 
-const languageCode: Record<Language, string[]> = {
-  Python: [
-    "def twoSum(nums, target):",
-    "    seen = {}",
-    "    for i, num in enumerate(nums):",
-    "        complement = target - num",
-    "        if complement in seen:",
-    "            return [seen[complement], i]",
-    "        seen[num] = i",
-    "    return []",
-  ],
-  "C++": [
-    "vector<int> twoSum(vector<int>& nums, int target) {",
-    "    unordered_map<int, int> seen;",
-    "    for (int i = 0; i < nums.size(); i++) {",
-    "        int complement = target - nums[i];",
-    "        if (seen.count(complement)) {",
-    "            return {seen[complement], i};",
-    "        }",
-    "        seen[nums[i]] = i;",
-    "    }",
-    "    return {};",
-    "}",
-  ],
-  Java: [
-    "int[] twoSum(int[] nums, int target) {",
-    "    Map<Integer, Integer> seen = new HashMap<>();",
-    "    for (int i = 0; i < nums.length; i++) {",
-    "        int complement = target - nums[i];",
-    "        if (seen.containsKey(complement)) {",
-    "            return new int[] { seen.get(complement), i };",
-    "        }",
-    "        seen.put(nums[i], i);",
-    "    }",
-    "    return new int[] {};",
-    "}",
-  ],
-};
+  currentIndex: number | null, array: number[], variables: {label: string; value: string}[],
 
-const pseudocode = [
-  "create an empty map called seen",
-  "for each number at index i:",
-  "    calculate complement = target - number",
-  "    if complement exists in seen:",
-  "        return the stored index and i",
-  "    store number → i in seen",
-  "return an empty result",
-];
+  memory: {label: string; value: string}[], result: string | null,
 
-const firstCaseSteps: Step[] = [
-  {
-    line: 2, currentIndex: null, complement: null, seen: {}, result: null,
-    title: "Initialize the hash map",
-    explanation: "Create an empty map named seen. It will remember each number we have visited and the index where it appeared, so we can look up a matching number quickly.",
-  },
-  {
-    line: 4, currentIndex: 0, complement: 7, seen: {}, result: null,
-    title: "Inspect the first number",
-    explanation: "The current number is 2 at index 0. To reach the target 9, we need 9 − 2 = 7. Since 7 is not in the map yet, keep looking.",
-  },
-  {
-    line: 7, currentIndex: 0, complement: 7, seen: { "2": 0 }, result: null,
-    title: "Store the first number",
-    explanation: "We have not found 7, so save the current number as seen[2] = 0. If a later number needs 2, we will know where to find it.",
-  },
-  {
-    line: 4, currentIndex: 1, complement: 2, seen: { "2": 0 }, result: null,
-    title: "Inspect the second number",
-    explanation: "Now the current number is 7 at index 1. Its complement is 9 − 7 = 2, and the map tells us that 2 appeared at index 0.",
-  },
-  {
-    line: 6, currentIndex: 1, complement: 2, seen: { "2": 0 }, result: [0, 1],
-    title: "Found the answer!",
-    explanation: "Return indices [0, 1]. The values at those positions are 2 and 7, and 2 + 7 = 9. We have the answer without checking every possible pair.",
-  },
-];
+  activeRange?: [number, number]
 
-const secondCaseSteps: Step[] = [
-  {
-    line: 2, currentIndex: null, complement: null, seen: {}, result: null,
-    title: "Initialize the hash map",
-    explanation: "Start with an empty map named seen. We are looking for two values whose sum is 6, and the map will track earlier values and their indices.",
-  },
-  {
-    line: 4, currentIndex: 0, complement: 3, seen: {}, result: null,
-    title: "Inspect the first number",
-    explanation: "The current number is 3 at index 0. We need another 3 to reach 6, but the map is empty, so we save this number and continue.",
-  },
-  {
-    line: 7, currentIndex: 0, complement: 3, seen: { "3": 0 }, result: null,
-    title: "Store the first number",
-    explanation: "Save 3 → 0 in the map. The matching 3 has not appeared earlier, so we keep moving through the array.",
-  },
-  {
-    line: 4, currentIndex: 1, complement: 4, seen: { "3": 0 }, result: null,
-    title: "Inspect the second number",
-    explanation: "The current number is 2 at index 1. We need 4 to reach 6, but 4 is not stored yet, so save 2 → 1 and continue.",
-  },
-  {
-    line: 7, currentIndex: 1, complement: 4, seen: { "3": 0, "2": 1 }, result: null,
-    title: "Store the second number",
-    explanation: "The map now remembers 3 at index 0 and 2 at index 1. Neither matched yet, so the algorithm moves to the final number.",
-  },
-  {
-    line: 4, currentIndex: 2, complement: 2, seen: { "3": 0, "2": 1 }, result: null,
-    title: "Inspect the third number",
-    explanation: "The current number is 4 at index 2. We need 6 − 4 = 2, and the map already has 2 → 1, so we can finish immediately.",
-  },
-  {
-    line: 6, currentIndex: 2, complement: 2, seen: { "3": 0, "2": 1 }, result: [1, 2],
-    title: "Found the answer!",
-    explanation: "Return indices [1, 2]. Those positions contain 2 and 4, and 2 + 4 = 6. The stored index gives us the earlier half of the pair.",
-  },
-];
+): VisualStep {
 
-const testCases: TestCase[] = [
-  { id: "case1", label: "Example 1", nums: [2, 7, 11, 15], target: 9, steps: firstCaseSteps },
-  { id: "case2", label: "Example 2", nums: [3, 2, 4], target: 6, steps: secondCaseSteps },
-];
+  return { title, explanation, line, pseudocodeLine, currentIndex, array, variables, memory, result, activeRange };
 
-function getHighlightedLine(stepIndex: number, language: Language, caseId: string) {
-  const lineMap: Record<Language, Record<string, number[]>> = {
-    Python: { case1: [2, 4, 7, 4, 6], case2: [2, 4, 7, 4, 7, 4, 6] },
-    "C++": { case1: [2, 4, 8, 4, 6], case2: [2, 4, 8, 4, 8, 4, 6] },
-    Java: { case1: [2, 4, 8, 4, 6], case2: [2, 4, 8, 4, 8, 4, 6] },
-  };
-  return lineMap[language][caseId]?.[stepIndex] ?? 1;
 }
 
 
-function getCodeExplanation(stepIndex: number, caseId: string, language: Language) {
-  const explanations: Record<string, string[]> = {
-    case1: [
-      "The function receives the array and target. This is the setup for the algorithm.",
-      "Create an empty map named seen. It stores each earlier number and the index where it appeared.",
-      "No matching 7 has appeared, so save the current number: seen[2] = 0. A future number can now find it quickly.",
-      "For 7, calculate 9 − 7 = 2. The map already contains 2 at index 0, so the pair has been found.",
-      "Return the saved index for 2 and the current index for 7: [0, 1]. There is no need to scan every possible pair.",
-    ],
-    case2: [
-      "The function receives the array and target. Here, we want two values that add up to 6.",
-      "Start with an empty map named seen to remember earlier numbers and their indices.",
-      "The complement of 3 is 3, but it has not appeared earlier. Save 3 at index 0 and continue.",
-      "For the current value 2, the complement is 4. It is not stored yet, so keep searching.",
-      "Save 2 at index 1. The map now remembers both earlier values: 3 → 0 and 2 → 1.",
-      "For 4, calculate 6 − 4 = 2. The map contains 2 at index 1, which completes the pair.",
-      "Return index 1 and the current index 2: [1, 2]. The corresponding values 2 and 4 add up to 6.",
-    ],
-  };
 
-  const byStep = explanations[caseId] ?? explanations.case1;
-  const text = byStep[Math.min(stepIndex, byStep.length - 1)] ?? byStep[0];
+function parseNumbers(input: string): number[] {
 
-  if (language === "C++") {
-    return `${text} Here, unordered_map stores the pairs; count() is used to check whether a key exists.`;
-  }
-  if (language === "Java") {
-    return `${text} Here, HashMap stores the pairs; containsKey() checks whether a key exists.`;
-  }
-  return `${text} In Python, a dictionary stores the pairs, and “in” checks whether a key exists.`;
+  const values = input.trim().split(/[\s,]+/).filter(Boolean).map(Number);
+
+  if (!values.length || values.some((n) => !Number.isFinite(n))) throw new Error("Enter one or more valid numbers separated by commas or spaces.");
+
+  return values;
+
 }
+
+
+
+const problems: Problem[] = [
+
+  {
+
+    id: "1", title: "Two Sum", difficulty: "Easy", category: "Hash Map",
+
+    description: "Find two distinct indices whose values add up to the target.",
+
+    inputHint: "Array values, then target (example: 2, 7, 11, 15; target: 9)",
+
+    defaultInput: "2, 7, 11, 15; target: 9",
+
+    languages: {
+
+      Python: ["def twoSum(nums, target):", "    seen = {}", "    for i, num in enumerate(nums):", "        complement = target - num", "        if complement in seen:", "            return [seen[complement], i]", "        seen[num] = i", "    return []"],
+
+      "C++": ["vector<int> twoSum(vector<int>& nums, int target) {", "    unordered_map<int, int> seen;", "    for (int i = 0; i < nums.size(); i++) {", "        int complement = target - nums[i];", "        if (seen.count(complement)) {", "            return {seen[complement], i};", "        }", "        seen[nums[i]] = i;", "    }", "    return {};","}"],
+
+      Java: ["int[] twoSum(int[] nums, int target) {", "    Map<Integer, Integer> seen = new HashMap<>();", "    for (int i = 0; i < nums.length; i++) {", "        int complement = target - nums[i];", "        if (seen.containsKey(complement)) {", "            return new int[] { seen.get(complement), i };", "        }", "        seen.put(nums[i], i);", "    }", "    return new int[] {};","}"]
+
+    },
+
+    pseudocode: ["create an empty map called seen", "for each number at index i", "calculate complement = target - number", "if complement exists in seen, return both indices", "otherwise store number → i", "return an empty result if no pair exists"],
+
+    parse(input) {
+
+      const match = input.match(/target\s*:\s*(-?\d+)/i);
+
+      const cleaned = input.replace(/;\s*target\s*:\s*-?\d+/i, "").replace(/target\s*:\s*-?\d+/i, "");
+
+      const nums = parseNumbers(cleaned);
+
+      const target = match ? Number(match[1]) : undefined;
+
+      if (target === undefined) throw new Error("For Two Sum, include a target, e.g. 2, 7, 11; target: 9.");
+
+      return { array: nums, target };
+
+    },
+
+    run(input) {
+
+      const {array, target} = this.parse(input); const steps: VisualStep[] = []; const seen: Record<string, number> = {};
+
+      steps.push(step("Initialize the hash map", "Start with an empty map. It stores each previously visited number and its index.", 2, 0, null, array, [{label:"Target",value:String(target)}], [], null));
+
+      for (let i=0;i<array.length;i++) {
+
+        const complement = target! - array[i];
+
+        steps.push(step(`Inspect index ${i}`, `Current value is ${array[i]}. To reach ${target}, we need ${target} − ${array[i]} = ${complement}.`, 4, 2, i, array, [{label:"Current",value:String(array[i])},{label:"Index",value:String(i)},{label:"Complement",value:String(complement)}], Object.entries(seen).map(([label,value])=>({label,value:String(value)})), null));
+
+        if (seen[String(complement)] !== undefined) {
+
+          steps.push(step("Pair found", `${complement} was stored at index ${seen[String(complement)]}. Return both indices; no nested scan is needed.`, 6, 3, i, array, [{label:"Complement",value:String(complement)}], Object.entries(seen).map(([label,value])=>({label,value:String(value)})), `Indices [${seen[String(complement)]}, ${i}] · values ${complement} + ${array[i]} = ${target}`));
+
+          return steps;
+
+        }
+
+        seen[String(array[i])] = i;
+
+        steps.push(step(`Store ${array[i]} → ${i}`, `The complement is not in the map, so store ${array[i]} at index ${i} for future lookups.`, 7, 4, i, array, [{label:"Current",value:String(array[i])},{label:"Complement",value:String(complement)}], Object.entries(seen).map(([label,value])=>({label,value:String(value)})), null));
+
+      }
+
+      steps.push(step("No pair found", "Every number was checked once and no complement matched. Return an empty result.", 8, 5, null, array, [], Object.entries(seen).map(([label,value])=>({label,value:String(value)})), "No pair found"));
+
+      return steps;
+
+    },
+
+    time:"O(n) average", space:"O(n)", timeWhy:"We visit each of the n numbers at most once. Hash-map lookups and inserts take O(1) on average, so the total work grows linearly. In the worst case, hash collisions can make operations slower.", spaceWhy:"If no pair is found, the map may store almost every number. The extra memory therefore grows in proportion to n.", bestCase:"O(1) if the first inspected value finds a previously stored complement (for an input where that is possible).", averageCase:"O(n) expected: one pass with average constant-time map operations.", worstCase:"Usually described as O(n) average-time; pathological hash collisions can degrade map operations.", memoryNote:"Up to n key-index pairs can be stored."
+
+  },
+
+  {
+
+    id:"704", title:"Binary Search", difficulty:"Easy", category:"Binary Search",
+
+    description:"Find a target in a sorted array by repeatedly halving the search range.",
+
+    inputHint:"Sorted array, then target (example: -1, 0, 3, 5, 9, 12; target: 9)",
+
+    defaultInput:"-1, 0, 3, 5, 9, 12; target: 9",
+
+    languages:{
+
+      Python:["def search(nums, target):","    left, right = 0, len(nums) - 1","    while left <= right:","        mid = (left + right) // 2","        if nums[mid] == target:","            return mid","        if nums[mid] < target:","            left = mid + 1","        else:","            right = mid - 1","    return -1"],
+
+      "C++":["int search(vector<int>& nums, int target) {","    int left = 0, right = nums.size() - 1;","    while (left <= right) {","        int mid = left + (right-left)/2;","        if (nums[mid] == target) return mid;","        if (nums[mid] < target) left = mid + 1;","        else right = mid - 1;","    }","    return -1;","}"],
+
+      Java:["int search(int[] nums, int target) {","    int left = 0, right = nums.length - 1;","    while (left <= right) {","        int mid = left + (right-left)/2;","        if (nums[mid] == target) return mid;","        if (nums[mid] < target) left = mid + 1;","        else right = mid - 1;","    }","    return -1;","}"]
+
+    },
+
+    pseudocode:["set left to first index and right to last index","while left is not past right","check the middle index","if middle value equals target, return its index","if middle value is smaller, search right half","otherwise search left half","return -1 when range is empty"],
+
+    parse(input){const m=input.match(/target\s*:\s*(-?\d+)/i);const cleaned=input.replace(/;\s*target\s*:\s*-?\d+/i,"").replace(/target\s*:\s*-?\d+/i,"");const array=parseNumbers(cleaned);if(!m)throw new Error("Include a target, e.g. 1, 3, 5; target: 3.");if(array.some((v,i)=>i>0&&array[i-1]>v))throw new Error("Binary Search needs a sorted array. Sort the values first.");return {array,target:Number(m[1])};},
+
+    run(input){const {array,target}=this.parse(input);if (target === undefined) {
+  throw new Error("A target value is required for Binary Search.");
+}let left=0,right=array.length-1;const s:VisualStep[]=[step("Set search boundaries","Start with the full sorted array: left is the first index and right is the last.",2,0,null,array,[{label:"Left",value:String(left)},{label:"Right",value:String(right)},{label:"Target",value:String(target)}],[],null,[left,right])];while(left<=right){const mid=Math.floor((left+right)/2);s.push(step(`Check middle index ${mid}`,`The middle index is ⌊(${left} + ${right}) / 2⌋ = ${mid}. Compare ${array[mid]} with target ${target}.`,4,2,mid,array,[{label:"Left",value:String(left)},{label:"Mid",value:String(mid)},{label:"Right",value:String(right)}],[],null,[left,right]));if(array[mid]===target){s.push(step("Target found",`${array[mid]} equals ${target}; return index ${mid}.`,5,3,mid,array,[{label:"Index",value:String(mid)}],[],`Target found at index ${mid}`,[left,right]));return s;}if(array[mid]<target){s.push(step("Discard left half",`${array[mid]} is smaller than ${target}, so every value at or left of mid can be skipped.`,6,4,mid,array,[{label:"New left",value:String(mid+1)},{label:"Right",value:String(right)}],[],null,[mid+1,right]));left=mid+1;}else{s.push(step("Discard right half",`${array[mid]} is larger than ${target}, so every value at or right of mid can be skipped.`,7,5,mid,array,[{label:"Left",value:String(left)},{label:"New right",value:String(mid-1)}],[],null,[left,mid-1]));right=mid-1;}}s.push(step("Target not found","The search range is empty, so the target is not present.",9,6,null,array,[{label:"Left",value:String(left)},{label:"Right",value:String(right)}],[],"Target not found · return -1"));return s;},
+
+    time:"O(log n)",space:"O(1)",timeWhy:"Each comparison removes about half of the remaining candidates. After k steps, about n / 2ᵏ elements remain; it takes roughly log₂(n) steps to get down to one element.",spaceWhy:"The algorithm only stores left, right, and mid. It does not create another array or a data structure that grows with input size.",bestCase:"O(1): the target is at the first middle position.",averageCase:"O(log n): each comparison halves the search interval.",worstCase:"O(log n): the range keeps halving until found or empty.",memoryNote:"Only a few integer variables are used, regardless of array size."
+
+  },
+
+  {
+
+    id:"121",title:"Best Time to Buy and Sell Stock",difficulty:"Easy",category:"Greedy",
+
+    description:"Choose one day to buy and a later day to sell for the maximum profit.",
+
+    inputHint:"Daily prices (example: 7, 1, 5, 3, 6, 4)",
+
+    defaultInput:"7, 1, 5, 3, 6, 4",
+
+    languages:{
+
+      Python:["def maxProfit(prices):","    min_price = float('inf')","    best = 0","    for price in prices:","        min_price = min(min_price, price)","        best = max(best, price - min_price)","    return best"],
+
+      "C++":["int maxProfit(vector<int>& prices) {","    int minPrice = INT_MAX, best = 0;","    for (int price : prices) {","        minPrice = min(minPrice, price);","        best = max(best, price - minPrice);","    }","    return best;","}"],
+
+      Java:["int maxProfit(int[] prices) {","    int minPrice = Integer.MAX_VALUE, best = 0;","    for (int price : prices) {","        minPrice = Math.min(minPrice, price);","        best = Math.max(best, price - minPrice);","    }","    return best;","}"]
+
+    },
+
+    pseudocode:["set minimum price to infinity and best profit to zero","for each day's price","update the lowest price seen so far","calculate profit if selling today","keep the largest profit","return the best profit"],
+
+    parse(input){return {array:parseNumbers(input)};},
+
+    run(input){const {array}=this.parse(input);let minPrice=Infinity,best=0;const s:VisualStep[]=[step("Initialize tracking values","We need the cheapest price seen so far and the best profit. Start with infinity and zero.",2,0,null,array,[{label:"Min price",value:"∞"},{label:"Best profit",value:"0"}],[],null)];array.forEach((price,i)=>{if(price<minPrice)minPrice=price;s.push(step(`Check day ${i+1}`,`Price is ${price}. Lowest price seen so far is ${minPrice}.`,5,2,i,array,[{label:"Price",value:String(price)},{label:"Min price",value:String(minPrice)}],[],null));const profit=price-minPrice;if(profit>best)best=profit;s.push(step("Update possible profit",`Selling today would give ${price} − ${minPrice} = ${profit}. Best profit so far is ${best}.`,6,3,i,array,[{label:"Today's profit",value:String(profit)},{label:"Best profit",value:String(best)}],[],null));});s.push(step("Maximum profit",`The best achievable profit is ${best}. Buy before selling; a negative profit is never chosen.`,7,4,null,array,[{label:"Best profit",value:String(best)}],[],`Maximum profit: ${best}`));return s;},
+
+    time:"O(n)",space:"O(1)",timeWhy:"Each price is processed once. Updating the minimum and comparing the current profit are constant-time operations, so doubling the number of days roughly doubles the work.",spaceWhy:"Only the minimum price and best profit are tracked. The algorithm does not need a second array or a map.",bestCase:"O(n) for the standard single-pass implementation, even if the first price is ideal.",averageCase:"O(n): one pass over all prices.",worstCase:"O(n): every day is visited once.",memoryNote:"Two main values are kept: minimum price and best profit."
+
+  },
+
+  {
+
+    id:"53",title:"Maximum Subarray",difficulty:"Medium",category:"Dynamic Programming",
+
+    description:"Find the contiguous subarray with the largest sum.",
+
+    inputHint:"Array values (example: -2, 1, -3, 4, -1, 2, 1, -5, 4)",
+
+    defaultInput:"-2, 1, -3, 4, -1, 2, 1, -5, 4",
+
+    languages:{
+
+      Python:["def maxSubArray(nums):","    current = best = nums[0]","    for num in nums[1:]:","        current = max(num, current + num)","        best = max(best, current)","    return best"],
+
+      "C++":["int maxSubArray(vector<int>& nums) {","    int current = nums[0], best = nums[0];","    for (int i = 1; i < nums.size(); i++) {","        current = max(nums[i], current + nums[i]);","        best = max(best, current);","    }","    return best;","}"],
+
+      Java:["int maxSubArray(int[] nums) {","    int current = nums[0], best = nums[0];","    for (int i = 1; i < nums.length; i++) {","        current = Math.max(nums[i], current + nums[i]);","        best = Math.max(best, current);","    }","    return best;","}"]
+
+    },
+
+    pseudocode:["initialize current sum and best sum from first value","for each remaining value","choose between starting fresh or extending current subarray","update the best sum seen so far","return the best sum"],
+
+    parse(input){return {array:parseNumbers(input)};},
+
+    run(input){const {array}=this.parse(input);let current=array[0],best=array[0];const s:VisualStep[]=[step("Initialize sums","Start both current sum and best sum at the first value. This also handles arrays containing only negative values.",2,0,0,array,[{label:"Current sum",value:String(current)},{label:"Best sum",value:String(best)}],[],null)];for(let i=1;i<array.length;i++){const extended=current+array[i];current=Math.max(array[i],extended);best=Math.max(best,current);s.push(step(`Process value ${array[i]}`,`Compare starting a new subarray at ${array[i]} with extending the previous sum (${extended}). Current sum becomes ${current}; best remains ${best}.`,4,2,i,array,[{label:"Value",value:String(array[i])},{label:"Current sum",value:String(current)},{label:"Best sum",value:String(best)}],[],null));}s.push(step("Maximum subarray sum",`The largest contiguous-subarray sum found is ${best}.`,6,4,null,array,[{label:"Best sum",value:String(best)}],[],`Maximum subarray sum: ${best}`));return s;},
+
+    time:"O(n)",space:"O(1)",timeWhy:"The algorithm makes one pass and does constant work per value: decide whether to extend the current subarray, then update the best sum.",spaceWhy:"Only two running sums are stored. No table of all subarray sums is created.",bestCase:"O(n) for this one-pass method.",averageCase:"O(n): one constant-time update per element.",worstCase:"O(n): each element is processed once.",memoryNote:"Two running sums, independent of the input length."
+
+  },
+
+  {
+
+    id:"20",title:"Valid Parentheses",difficulty:"Easy",category:"Stack",
+
+    description:"Check whether every opening bracket is closed in the correct order.",
+
+    inputHint:"Bracket string (example: ()[]{} or ([)] )",
+
+    defaultInput:"()[]{}",
+
+    languages:{
+
+      Python:["def isValid(s):","    stack = []","    pairs = {')':'(', ']':'[', '}':'{'}","    for char in s:","        if char in pairs:","            if not stack or stack.pop() != pairs[char]:","                return False","        else:","            stack.append(char)","    return not stack"],
+
+      "C++":["bool isValid(string s) {","    stack<char> st;","    for (char c : s) {","        if (c == '(' || c == '[' || c == '{') st.push(c);","        else {","            if (st.empty()) return false;","            char top = st.top(); st.pop();","            if ((c == ')' && top != '(') || (c == ']' && top != '[') || (c == '}' && top != '{')) return false;","        }","    }","    return st.empty();","}"],
+
+      Java:["boolean isValid(String s) {","    Deque<Character> stack = new ArrayDeque<>();","    for (char c : s.toCharArray()) {","        if (c == '(' || c == '[' || c == '{') stack.push(c);","        else {","            if (stack.isEmpty()) return false;","            char top = stack.pop();","            if ((c == ')' && top != '(') || (c == ']' && top != '[') || (c == '}' && top != '{')) return false;","        }","    }","    return stack.isEmpty();","}"]
+
+    },
+
+    pseudocode:["create an empty stack","read each bracket from left to right","push opening brackets","for a closing bracket, check the most recent opening bracket","return false if the pair/order is invalid","valid only if the stack is empty at the end"],
+
+    parse(input){const text=input.trim();if(!text||!Array.from(text).every(c=>"()[]{}".includes(c)))throw new Error("Enter a bracket string using only (, ), [, ], {, }.");return {array:Array.from(text).map(c=>c.charCodeAt(0)),text};},
+
+    run(input){const {text}=this.parse(input);const chars=Array.from(text??"");const stack:string[]=[];const pairs:Record<string,string>={")":"(","]":"[","}":"{"};const arr=chars.map(c=>c.charCodeAt(0));const s:VisualStep[]=[step("Create an empty stack","The stack remembers opening brackets. The most recent opening bracket must close first.",2,0,null,arr,[{label:"Input",value:text??""}],[],null)];for(let i=0;i<chars.length;i++){const c=chars[i];if("([{".includes(c)){stack.push(c);s.push(step(`Push '${c}'`, `'${c}' is an opening bracket, so push it onto the stack.`,9,2,i,arr,[{label:"Character",value:c},{label:"Position",value:String(i)}],stack.map((v,j)=>({label:`Stack ${j+1}`,value:v})),null));}else{const top=stack.pop();const ok=top===pairs[c];s.push(step(ok?`Match '${c}'`:`Invalid closing '${c}'`,ok?`'${c}' correctly closes '${top}'. Remove the opening bracket from the stack.`:`Expected a closing bracket for '${top??"nothing"}', but found '${c}'. The sequence is invalid.`,6,3,i,arr,[{label:"Character",value:c},{label:"Top before pop",value:top??"empty"}],stack.map((v,j)=>({label:`Stack ${j+1}`,value:v})),ok?null:"Invalid bracket sequence"));if(!ok)return s;}}s.push(step(stack.length===0?"Valid parentheses":"Unclosed brackets",stack.length===0?"All brackets matched in the correct order, and the stack is empty.":"Some opening brackets remain without matching closers.",10,5,null,arr,[],stack.map((v,j)=>({label:`Stack ${j+1}`,value:v})),stack.length===0?"Valid bracket sequence":"Invalid · opening brackets remain"));return s;},
+
+    time:"O(n)",space:"O(n)",timeWhy:"Each character is examined once. Stack push and pop operations take O(1), so processing n characters takes linear time.",spaceWhy:"In the worst case, all characters are opening brackets and must remain on the stack until the end. Stack size can therefore grow with n.",bestCase:"O(1) if an invalid closing bracket is detected immediately; otherwise input must be scanned.",averageCase:"O(n): scan characters and use constant-time stack operations.",worstCase:"O(n): every character is processed.",memoryNote:"The stack can hold up to n opening brackets."
+
+  }
+
+];
+
+
+
+function lineFor(step: VisualStep, language: Language, problem: Problem): number {
+
+  const source = problem.languages[language];
+
+  return Math.min(Math.max(step.line, 1), source.length);
+
+}
+
+
 
 export default function App() {
+
   const [theme, setTheme] = useState<"light" | "dark">(() => {
-    try {
-      return localStorage.getItem("stepwise-theme") === "dark" ? "dark" : "light";
-    } catch {
-      return "light";
-    }
+
+    try { return localStorage.getItem("stepwise-theme") === "dark" ? "dark" : "light"; } catch { return "light"; }
+
   });
 
   useEffect(() => {
+
     document.documentElement.dataset.theme = theme;
-    try {
-      localStorage.setItem("stepwise-theme", theme);
-    } catch {
-      // The theme still works if browser storage is unavailable.
-    }
+
+    try { localStorage.setItem("stepwise-theme", theme); } catch {}
+
   }, [theme]);
 
-  const [problem, setProblem] = useState("1");
-  const [activeProblem, setActiveProblem] = useState("1");
-  const [stepIndex, setStepIndex] = useState(0);
-  const [error, setError] = useState("");
+
+
+  const [problemQuery, setProblemQuery] = useState("1");
+
+  const [activeId, setActiveId] = useState<string>("1");
+
   const [language, setLanguage] = useState<Language>("Python");
-  const [selectedTestCase, setSelectedTestCase] = useState("case1");
+
+  const [stepIndex, setStepIndex] = useState(0);
+
+  const [input, setInput] = useState(problems[0].defaultInput);
+
+  const [inputDraft, setInputDraft] = useState(problems[0].defaultInput);
+
+  const [customCases, setCustomCases] = useState<{id:string; label:string; input:string}[]>([]);
+
+  const [selectedCaseId, setSelectedCaseId] = useState("default");
+
+  const [error, setError] = useState("");
+
+  const [aboutDevOpen, setAboutDevOpen] = useState(false);
+
   const [pseudocodeZoom, setPseudocodeZoom] = useState(1);
+
   const [solutionZoom, setSolutionZoom] = useState(1);
+
   const [visualizerZoom, setVisualizerZoom] = useState(1);
 
-  const activeTestCase = testCases.find((testCase) => testCase.id === selectedTestCase) ?? testCases[0];
-  const nums = activeTestCase.nums;
-  const target = activeTestCase.target;
-  const steps = activeTestCase.steps;
-  const step = steps[Math.min(stepIndex, steps.length - 1)];
-  const highlightedLine = getHighlightedLine(stepIndex, language, activeTestCase.id);
-  const codeExplanation = getCodeExplanation(stepIndex, activeTestCase.id, language);
 
-  function searchProblem(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const query = problem.trim().toLowerCase();
 
-    if (query === "1" || query === "two sum") {
-      setActiveProblem("1");
-      setStepIndex(0);
-      setSelectedTestCase("case1");
-      setError("");
-    } else {
-      setError(
-        "This MVP currently supports LeetCode #1 (Two Sum). More problems will be added next."
-      );
-    }
+  const problem = problems.find(p => p.id === activeId) ?? problems[0];
+
+  const steps = useMemo(() => {
+
+    try { return problem.run(input); } catch { return []; }
+
+  }, [problem, input]);
+
+  const step = steps[Math.min(stepIndex, Math.max(steps.length-1,0))];
+
+  const highlightedLine = step ? lineFor(step, language, problem) : 1;
+
+
+
+  function openProblem(e: React.FormEvent<HTMLFormElement>) {
+
+    e.preventDefault();
+
+    const q = problemQuery.trim().toLowerCase();
+
+    const found = problems.find(p => p.id === q || p.title.toLowerCase() === q || p.title.toLowerCase().includes(q));
+
+    if (!found) { setError("Problem not found yet. Try 1, 20, 53, 121, 704 or a problem name."); return; }
+
+    setActiveId(found.id); setInput(found.defaultInput); setInputDraft(found.defaultInput);
+
+    setSelectedCaseId("default"); setStepIndex(0); setError("");
+
   }
 
-  function toggleTheme() {
-    setTheme((current) => (current === "light" ? "dark" : "light"));
+  function applyInput(next: string) {
+
+    try { problem.run(next); setInput(next); setInputDraft(next); setStepIndex(0); setError(""); setSelectedCaseId("custom"); }
+
+    catch (err) { setError(err instanceof Error ? err.message : "Could not run this input."); }
+
   }
 
-  return (
-    <main className="app">
-      <header className="topbar">
-        <a className="brand" href="/">
-          <span className="brand-mark">S</span>
-          Stepwise
-        </a>
+  function addCase() {
 
-        <div className="header-actions">
-          <span className="topbar-label">Understand code. One step at a time.</span>
-          <button
-            type="button"
-            className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
-            title="Toggle theme"
-          >
-            {theme === "light" ? "☾ Dark" : "☀ Light"}
-          </button>
-        </div>
-      </header>
+    try {
 
-      <section className="page">
-        <div className="intro">
-          <p className="eyebrow">INTERACTIVE DSA LAB</p>
-          <h1>Understand the algorithm.</h1>
-          <p className="subtitle">
-            Follow every line, variable, and decision as the code executes.
-          </p>
-        </div>
+      problem.run(inputDraft);
 
-        <form className="search" onSubmit={searchProblem}>
-          <label htmlFor="problem">LeetCode problem</label>
-          <div className="search-row">
-            <input
-              id="problem"
-              value={problem}
-              onChange={(event) => setProblem(event.target.value)}
-              placeholder="Enter number or problem name"
-            />
-            <button type="submit">Open problem →</button>
-          </div>
-          {error && <p className="error">{error}</p>}
-        </form>
+      const id = `custom-${Date.now()}`;
 
-        {activeProblem === "1" && (
-          <>
-            <section className="problem-heading">
-              <div>
-                <div className="problem-meta">
-                  <span>PROBLEM #1</span>
-                  <span className="difficulty">Easy</span>
-                </div>
-                <h2>Two Sum</h2>
-                <p>Find two distinct indices whose values add up to the target.</p>
-              </div>
-              <div className="target-card">
-                <span>Target</span>
-                <strong>{target}</strong>
-              </div>
-            </section>
+      const item = {id, label:`Custom ${customCases.length+1}`, input:inputDraft};
 
-            <section className="testcase-selector" aria-label="Choose a test case">
-              <div className="testcase-heading">
-                <strong>Try different test cases</strong>
-                <span>Choose an example to visualize its execution</span>
-              </div>
-              <div className="testcase-buttons">
-                {testCases.map((testCase) => (
-                  <button
-                    type="button"
-                    key={testCase.id}
-                    className={`testcase-button ${selectedTestCase === testCase.id ? "testcase-active" : ""}`}
-                    onClick={() => {
-                      setSelectedTestCase(testCase.id);
-                      setStepIndex(0);
-                    }}
-                    aria-pressed={selectedTestCase === testCase.id}
-                  >
-                    <strong>{testCase.label}</strong>
-                    <code>nums = [{testCase.nums.join(", ")}], target = {testCase.target}</code>
-                  </button>
-                ))}
-              </div>
-            </section>
+      setCustomCases(current=>[...current,item]); setSelectedCaseId(id);
 
-            <section className="workspace">
-              <div className="panel code-panel">
-                <section className="pseudocode-section">
-                  <div className="panel-header">
-                    <span>1. Understand the pseudocode first</span>
-                    <div className="zoom-controls" aria-label="Pseudocode zoom controls">
-                      <button type="button" onClick={() => setPseudocodeZoom((z) => Math.max(0.8, Math.round((z - 0.1) * 10) / 10))} disabled={pseudocodeZoom <= 0.8} aria-label="Zoom out pseudocode" title="Zoom out">A−</button>
-                      <button type="button" onClick={() => setPseudocodeZoom((z) => Math.min(1.4, Math.round((z + 0.1) * 10) / 10))} disabled={pseudocodeZoom >= 1.4} aria-label="Zoom in pseudocode" title="Zoom in">A+</button>
-                    </div>
-                  </div>
-                  <div className="pseudocode-content" style={{ zoom: pseudocodeZoom }}>
-                    <div className="pseudocode-intro">
-                      Try to explain each step in your own words before looking at the implementation.
-                    </div>
-                    <div className="pseudocode">
-                    {pseudocode.map((line, index) => {
-                      const activePseudocodeLine = [0, 2, 5, 2, 4, 2, 4][Math.min(stepIndex, 6)];
-                      return (
-                        <div
-                          className={`pseudo-line ${activePseudocodeLine === index ? "pseudo-active" : ""}`}
-                          key={line}
-                        >
-                          <span>{index + 1}</span>
-                          <code>{line}</code>
-                        </div>
-                      );
-                    })}
-                    </div>
-                  </div>
-                </section>
+      setInput(item.input); setStepIndex(0); setError("");
 
-                <section className="solution-section">
-                  <div className="panel-header code-panel-header">
-                    <span>2. Main solution</span>
-                    <div className="solution-header-actions">
-                    <div className="zoom-controls" aria-label="Solution zoom controls">
-                      <button type="button" onClick={() => setSolutionZoom((z) => Math.max(0.8, Math.round((z - 0.1) * 10) / 10))} disabled={solutionZoom <= 0.8} aria-label="Zoom out solution" title="Zoom out">A−</button>
-                      <button type="button" onClick={() => setSolutionZoom((z) => Math.min(1.4, Math.round((z + 0.1) * 10) / 10))} disabled={solutionZoom >= 1.4} aria-label="Zoom in solution" title="Zoom in">A+</button>
-                    </div>
-                    <label className="language-picker">
-                      <span className="sr-only">Programming language</span>
-                      <select
-                        value={language}
-                        onChange={(event) => setLanguage(event.target.value as Language)}
-                        aria-label="Select programming language"
-                      >
-                        <option value="Python">Python</option>
-                        <option value="C++">C++</option>
-                        <option value="Java">Java</option>
-                      </select>
-                    </label>
-                    </div>
-                  </div>
-                  <div className="solution-content" style={{ zoom: solutionZoom }}>
-                  <div className="solution-split">
-                    <div className="code" aria-label={`${language} solution code`}>
-                      {languageCode[language].map((line, index) => (
-                        <div
-                          className={`code-line ${highlightedLine === index + 1 ? "active-line" : ""}`}
-                          key={`${language}-${index}`}
-                        >
-                          <span className="line-number">{index + 1}</span>
-                          <code>{line}</code>
-                        </div>
-                      ))}
-                    </div>
-                    <aside className="code-explanation" aria-live="polite">
-                      <div className="code-explanation-title">
-                        <span className="explanation-pulse" />
-                        <strong>What this code is doing</strong>
-                        <span>Line {highlightedLine}</span>
-                      </div>
-                      <p>{codeExplanation}</p>
-                    </aside>
-                  </div>
-                  <p className="code-note">The highlighted line and explanation update as you move through the steps.</p>
-                  </div>
-                </section>
-              </div>
+    } catch(err) { setError(err instanceof Error ? err.message : "Please check your input."); }
 
-              <div className="panel visual-panel">
-                <div className="panel-header">
-                  <span>Execution visualizer</span>
-                  <div className="visualizer-header-actions">
-                    <div className="zoom-controls" aria-label="Visualizer zoom controls">
-                      <button type="button" onClick={() => setVisualizerZoom((z) => Math.max(0.8, Math.round((z - 0.1) * 10) / 10))} disabled={visualizerZoom <= 0.8} aria-label="Zoom out visualizer" title="Zoom out">A−</button>
-                      <button type="button" onClick={() => setVisualizerZoom((z) => Math.min(1.4, Math.round((z + 0.1) * 10) / 10))} disabled={visualizerZoom >= 1.4} aria-label="Zoom in visualizer" title="Zoom in">A+</button>
-                    </div>
-                    <span className="step-count">{stepIndex + 1} / {steps.length}</span>
-                  </div>
-                </div>
+  }
 
-                <div className="visualizer-content" style={{ zoom: visualizerZoom }}>
-                <div className="step-content">
-                  <p className="eyebrow">CURRENT STEP</p>
-                  <h3>{step.title}</h3>
-                  <p className="explanation">{step.explanation}</p>
-                </div>
+  function chooseCase(id:string, value:string) {
 
-                <div className="section-label">Input array</div>
-                <div className="array">
-                  {nums.map((num, index) => (
-                    <div className="array-item" key={index}>
-                      <div
-                        className={`array-value ${
-                          step.currentIndex === index ? "selected" : ""
-                        } ${step.result?.includes(index) ? "matched" : ""}`}
-                      >
-                        {num}
-                      </div>
-                      <span className="array-index">index {index}</span>
-                    </div>
-                  ))}
-                </div>
+    setSelectedCaseId(id); setInput(value); setInputDraft(value); setStepIndex(0); setError("");
 
-                <div className="metrics">
-                  <div className="metric">
-                    <span>Current value</span>
-                    <strong>
-                      {step.currentIndex === null ? "—" : nums[step.currentIndex]}
-                    </strong>
-                  </div>
-                  <div className="metric">
-                    <span>Complement</span>
-                    <strong>{step.complement ?? "—"}</strong>
-                  </div>
-                </div>
+  }
 
-                <div className="section-label">Hash map · value → index</div>
-                <div className="hash-map">
-                  {Object.keys(step.seen).length === 0 ? (
-                    <span className="empty-state">Empty map</span>
-                  ) : (
-                    Object.entries(step.seen).map(([value, index]) => (
-                      <span className="map-entry" key={value}>
-                        {value} → {index}
-                      </span>
-                    ))
-                  )}
-                </div>
+  function toggleTheme() { setTheme(current => current === "light" ? "dark" : "light"); }
 
-                {step.result && (
-                  <div className="result">
-                    <span>✓</span>
-                    <div>
-                      <strong>Answer: [{step.result.join(", ")}]</strong>
-                      <p>
-                        nums[{step.result[0]}] + nums[{step.result[1]}] ={" "}
-                        {nums[step.result[0]]} + {nums[step.result[1]]} = {target}
-                      </p>
-                    </div>
-                  </div>
-                )}
 
-                <div className="controls">
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
-                    disabled={stepIndex === 0}
-                  >
-                    ← Previous
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    onClick={() => setStepIndex(0)}
-                  >
-                    ↺ Reset
-                  </button>
-                  <button
-                    type="button"
-                    className="primary-button"
-                    onClick={() =>
-                      setStepIndex((i) => Math.min(steps.length - 1, i + 1))
-                    }
-                    disabled={stepIndex === steps.length - 1}
-                  >
-                    Next →
-                  </button>
-                </div>
-                </div>
-              </div>
-            </section>
 
-            <section className="complexity">
-              <div>
-                <span>Time complexity</span>
-                <strong>O(n)</strong>
-              </div>
-              <div>
-                <span>Space complexity</span>
-                <strong>O(n)</strong>
-              </div>
-              <p>
-                Each number is processed once, and the hash map can store up to n
-                numbers.
-              </p>
-            </section>
-          </>
-        )}
+  return <main className="app">
+
+    <header className="topbar">
+
+      <a className="brand" href="/"><span className="brand-mark">S</span>Stepwise</a>
+
+      <div className="header-actions">
+
+        <span className="topbar-label">Understand code. One step at a time.</span>
+
+        <button type="button" className="about-dev-toggle" onClick={()=>setAboutDevOpen(true)}>About Dev</button>
+
+        <button type="button" className="theme-toggle" onClick={toggleTheme}>{theme==="light"?"☾ Dark":"☀ Light"}</button>
+
+      </div>
+
+    </header>
+
+    {aboutDevOpen && <div className="about-dev-backdrop" onClick={()=>setAboutDevOpen(false)}><section className="about-dev-dialog" role="dialog" aria-modal="true" onClick={e=>e.stopPropagation()}>
+
+      <button type="button" className="about-dev-close" onClick={()=>setAboutDevOpen(false)}>×</button>
+
+      <p className="eyebrow">THE DEVELOPER</p><h2>Mayura C R</h2>
+
+      <p className="about-dev-intro">Engineering student building tools that make complex concepts easier to understand.</p>
+
+      <div className="about-dev-details">
+
+        <div><span>Currently studying</span><strong>B.Tech — Computer Science & Engineering (AI & ML)</strong></div>
+
+        <div><span>University</span><strong>Parul University · Expected 2029</strong></div>
+
+        <div><span>Also completed</span><strong>Dual Degree — Robotics & Automation</strong></div>
+
+        <div><span>Interests</span><strong>AI/ML · DSA · Robotics · Developer tools</strong></div>
+
+      </div>
+
+      <div className="about-dev-contact"><a href="mailto:mayuracr18@gmail.com">Email</a><a href="https://www.linkedin.com/in/mayura-c-r-29784b377" target="_blank" rel="noreferrer">LinkedIn</a><a href="https://github.com/Mayuraa18" target="_blank" rel="noreferrer">GitHub</a></div>
+
+      <div className="about-dev-footer"><span className="portfolio-placeholder">Portfolio link coming soon</span><button type="button" className="primary-button" onClick={()=>setAboutDevOpen(false)}>Nice, got it</button></div>
+
+    </section></div>}
+
+    <section className="page">
+
+      <div className="intro"><p className="eyebrow">INTERACTIVE DSA LAB</p><h1>Understand the algorithm.</h1><p className="subtitle">Follow every line, variable, and decision as the code executes.</p></div>
+
+      <form className="search" onSubmit={openProblem}>
+
+        <label htmlFor="problem-search">LeetCode problem</label>
+
+        <div className="search-row"><input id="problem-search" value={problemQuery} onChange={e=>setProblemQuery(e.target.value)} placeholder="Enter number or problem name"/><button type="submit">Open problem →</button></div>
+
+        {error && <p className="error" role="alert">{error}</p>}
+
+        <div className="problem-quick-list">{problems.map(p=><button type="button" key={p.id} className={p.id===activeId?"quick-problem active":"quick-problem"} onClick={()=>{setProblemQuery(p.id);setActiveId(p.id);setInput(p.defaultInput);setInputDraft(p.defaultInput);setStepIndex(0);setSelectedCaseId("default");setError("");}}><span>#{p.id}</span>{p.title}<small>{p.difficulty}</small></button>)}</div>
+
+      </form>
+
+      <section className="problem-heading">
+
+        <div><div className="problem-meta"><span>PROBLEM #{problem.id}</span><span className="difficulty">{problem.difficulty}</span><span className="category-pill">{problem.category}</span></div><h2>{problem.title}</h2><p>{problem.description}</p></div>
+
       </section>
-    </main>
-  );
+
+
+
+      <section className="testcase-selector">
+
+        <div className="testcase-heading"><strong>Test cases</strong><span>Choose an example or run your own input</span></div>
+
+        <div className="testcase-buttons">
+
+          <button type="button" className={`testcase-button ${selectedCaseId==="default"?"testcase-active":""}`} onClick={()=>chooseCase("default",problem.defaultInput)}><strong>Default example</strong><code>{problem.defaultInput}</code></button>
+
+          {customCases.map(c=><div className="custom-case-wrap" key={c.id}><button type="button" className={`testcase-button ${selectedCaseId===c.id?"testcase-active":""}`} onClick={()=>chooseCase(c.id,c.input)}><strong>{c.label}</strong><code>{c.input}</code></button><button type="button" className="remove-case" title={`Remove ${c.label}`} onClick={()=>{setCustomCases(cs=>cs.filter(x=>x.id!==c.id));if(selectedCaseId===c.id)chooseCase("default",problem.defaultInput);}}>×</button></div>)}
+
+        </div>
+
+        <div className="custom-input">
+
+          <label htmlFor="custom-input">Custom input</label>
+
+          <textarea id="custom-input" rows={2} value={inputDraft} onChange={e=>setInputDraft(e.target.value)} placeholder={problem.inputHint}/>
+
+          <p>{problem.inputHint}</p>
+
+          <div className="custom-input-actions"><button type="button" className="secondary-button" onClick={()=>applyInput(inputDraft)}>Run input ↻</button><button type="button" className="primary-button" onClick={addCase}>Save as test case +</button></div>
+
+        </div>
+
+      </section>
+
+
+
+      <section className="workspace">
+
+        <div className="panel code-panel">
+
+          <section className="pseudocode-section"><div className="panel-header"><span>1. Understand the pseudocode first</span><div className="zoom-controls"><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={pseudocodeZoom<=.8}>A−</button><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={pseudocodeZoom>=1.4}>A+</button></div></div>
+
+            <div className="pseudocode-content" style={{zoom:pseudocodeZoom}}><div className="pseudocode-intro">Try to explain each step in your own words before looking at the implementation.</div><div className="pseudocode">{problem.pseudocode.map((line,i)=><div className={`pseudo-line ${step?.pseudocodeLine===i?"pseudo-active":""}`} key={line}><span>{i+1}</span><code>{line}</code></div>)}</div></div>
+
+          </section>
+
+          <section className="solution-section"><div className="panel-header code-panel-header"><span>2. Main solution</span><div className="solution-header-actions"><div className="zoom-controls"><button type="button" onClick={()=>setSolutionZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={solutionZoom<=.8}>A−</button><button type="button" onClick={()=>setSolutionZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={solutionZoom>=1.4}>A+</button></div><label className="language-picker"><span className="sr-only">Programming language</span><select value={language} onChange={e=>setLanguage(e.target.value as Language)}><option>Python</option><option>C++</option><option>Java</option></select></label></div></div>
+
+            <div className="solution-content" style={{zoom:solutionZoom}}><div className="solution-split"><div className="code">{problem.languages[language].map((line,i)=><div className={`code-line ${highlightedLine===i+1?"active-line":""}`} key={`${language}-${i}`}><span className="line-number">{i+1}</span><code>{line}</code></div>)}</div><aside className="code-explanation"><div className="code-explanation-title"><span className="explanation-pulse"/><strong>What this code is doing</strong><span>Line {highlightedLine}</span></div><p>{step?.explanation??"Edit the input and run it to generate execution steps."}</p></aside></div><p className="code-note">The highlighted line and explanation update as you move through the steps.</p></div>
+
+          </section>
+
+        </div>
+
+
+
+        <div className="panel visual-panel"><div className="panel-header"><span>Execution visualizer</span><div className="visualizer-header-actions"><div className="zoom-controls"><button type="button" onClick={()=>setVisualizerZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={visualizerZoom<=.8}>A−</button><button type="button" onClick={()=>setVisualizerZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={visualizerZoom>=1.4}>A+</button></div><span className="step-count">{steps.length?stepIndex+1:0} / {steps.length}</span></div></div>
+
+          <div className="visualizer-content" style={{zoom:visualizerZoom}}>
+
+            {step?<><div className="step-content"><p className="eyebrow">CURRENT STEP</p><h3>{step.title}</h3><p className="explanation">{step.explanation}</p></div>
+
+              <div className="section-label">{problem.id==="20"?"Bracket input (character codes shown)": "Input array"}</div>
+
+              {problem.id==="20" ? <div className="bracket-string">{input.trim().split("").map((c,i)=><span key={i} className={step.currentIndex===i?"selected":""}>{c}</span>)}</div> :
+
+              <div className="array" style={{gridTemplateColumns:`repeat(${Math.min(Math.max(step.array.length,1),8)}, minmax(0,1fr))`}}>{step.array.map((num,i)=><div className="array-item" key={i}><div className={`array-value ${step.currentIndex===i?"selected":""} ${step.result&&step.result.includes(`index ${i}`)?"matched":""} ${step.activeRange&&i>=step.activeRange[0]&&i<=step.activeRange[1]?"in-range":""}`}>{num}</div><span className="array-index">index {i}</span></div>)}</div>}
+
+              <div className="metrics">{step.variables.map(v=><div className="metric" key={v.label}><span>{v.label}</span><strong>{v.value}</strong></div>)}</div>
+
+              <div className="section-label">{problem.id==="20"?"Stack · last in, first out":problem.id==="1"?"Hash map · value → index":"Algorithm state"}</div>
+
+              <div className="hash-map">{step.memory.length?step.memory.map((m,i)=><span className="map-entry" key={`${m.label}-${i}`}>{m.label} → {m.value}</span>):<span className="empty-state">{problem.id==="1"?"Empty map":problem.id==="20"?"Stack is empty":"No extra data structure"}</span>}</div>
+
+              {step.result&&<div className="result"><span>✓</span><div><strong>{step.result}</strong><p>Result for this input</p></div></div>}
+
+              <div className="controls"><button type="button" className="secondary-button" onClick={()=>setStepIndex(i=>Math.max(0,i-1))} disabled={stepIndex===0}>← Previous</button><button type="button" className="secondary-button" onClick={()=>setStepIndex(0)}>↺ Reset</button><button type="button" className="primary-button" onClick={()=>setStepIndex(i=>Math.min(steps.length-1,i+1))} disabled={stepIndex>=steps.length-1}>Next →</button></div>
+
+            </>:<div className="step-content"><h3>Check your input</h3><p className="explanation">Fix the input above, then choose Run input to create the execution steps.</p></div>}
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+      <section className="complexity-lab">
+
+        <div className="complexity-lab-heading"><div><p className="eyebrow">COMPLEXITY LAB</p><h2>What does the complexity mean?</h2></div><span className="category-pill">Interactive explanation</span></div>
+
+        <div className="complexity-summary"><div><span>Time complexity</span><strong>{problem.time}</strong><p>{problem.timeWhy}</p></div><div><span>Space complexity</span><strong>{problem.space}</strong><p>{problem.spaceWhy}</p></div></div>
+
+        <div className="complexity-details"><article><h3>Time growth</h3><p>{problem.bestCase}</p><p>{problem.averageCase}</p><p>{problem.worstCase}</p><div className="growth-visual"><div className="growth-row"><span>Linear O(n)</span><div className="growth-track"><div className="growth-bar linear"/></div></div><div className="growth-row"><span>Quadratic O(n²)</span><div className="growth-track"><div className="growth-bar quadratic"/></div></div><small>Illustrative growth shapes. The highlighted algorithm's complexity is explained above; these bars are not measured runtime.</small></div></article>
+
+          <article><h3>Extra memory</h3><p>{problem.memoryNote}</p><div className="memory-visual">{Array.from({length:8},(_,i)=><div key={i} className={`memory-cell ${problem.space==="O(1)"?i<2?"used":"" : i<6?"used":""}`}>{problem.space==="O(1)"?(i<2?"state":""):(i<6?"item":"")}</div>)}</div><small>Conceptual memory illustration; not a live memory profiler.</small></article>
+
+        </div>
+
+      </section>
+
+    </section>
+
+  </main>;
+
 }
