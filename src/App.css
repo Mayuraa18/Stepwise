@@ -886,3 +886,106 @@ transform-origin: top left;
   .growth-row { grid-template-columns: 95px 1fr; }
   .quick-problem { flex-wrap: wrap; }
 }
+
+
+/* Readability improvements — light theme */
+:root:not([data-theme="dark"]) .pseudo-line code {
+  font-weight: 600;
+  color: #26382c;
+}
+
+:root:not([data-theme="dark"]) .pseudo-line span {
+  color: #59665d;
+  opacity: 1;
+}
+
+:root:not([data-theme="dark"]) .code-line code {
+  font-weight: 500;
+  color: #26382c;
+}
+
+:root:not([data-theme="dark"]) .line-number {
+  color: #626d64;
+}
+
+/* Problem selector: improve number and difficulty contrast */
+.quick-problem > span {
+  color: #d6e6da;
+  font-weight: 700;
+}
+
+.quick-problem > small {
+  color: #d6e6da;
+  font-weight: 600;
+  opacity: 1;
+}
+
+/* Selected problem stays clear in light mode */
+:root:not([data-theme="dark"]) .quick-problem.active > span,
+:root:not([data-theme="dark"]) .quick-problem.active > small {
+  color: #245c3b;
+}
+
+/* Keep inactive problem labels readable on green buttons */
+:root:not([data-theme="dark"]) .quick-problem:not(.active) > span,
+:root:not([data-theme="dark"]) .quick-problem:not(.active) > small {
+  color: #e4f0e7;
+}
+
+
+/* Problem selector — clear selected and unselected states */
+
+/* Problem number: compact, distinct label */
+.quick-problem > span {
+  font-family: "DM Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+/* Difficulty: smaller, softer metadata */
+.quick-problem > small {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+
+/* Selected button: dark text on pale green */
+.quick-problem.active {
+  color: #174c2e;
+  background: #e8f5eb;
+  border-color: #27824c;
+}
+
+.quick-problem.active > span {
+  color: #246640;
+}
+
+.quick-problem.active > small {
+  color: #3d6b4c;
+}
+
+/* Unselected buttons: white text on green */
+.quick-problem:not(.active) {
+  color: #ffffff;
+}
+
+.quick-problem:not(.active) > span {
+  color: #cce5d4;
+}
+
+.quick-problem:not(.active) > small {
+  color: #d5e8da;
+}
+
+/* Dark theme: preserve readable contrast */
+:root[data-theme="dark"] .quick-problem.active {
+  color: #e5f4e9;
+  background: #294a32;
+  border-color: #67cf87;
+}
+
+:root[data-theme="dark"] .quick-problem.active > span,
+:root[data-theme="dark"] .quick-problem.active > small {
+  color: #bce8c7;
+}

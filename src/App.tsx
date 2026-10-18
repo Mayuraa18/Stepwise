@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Language, VisualStep, Problem } from "./engine/types";
 import "./App.css";
+import { twoSumProblem } from "./problems/two-sum.ts";
+import { adaptProblem } from "./problems/adapt-problem.ts";
 
 
 function step(
@@ -34,80 +36,8 @@ function parseNumbers(input: string): number[] {
 
 
 const problems: Problem[] = [
-
-  {
-
-    id: "1", title: "Two Sum", difficulty: "Easy", category: "Hash Map",
-
-    description: "Find two distinct indices whose values add up to the target.",
-
-    inputHint: "Array values, then target (example: 2, 7, 11, 15; target: 9)",
-
-    defaultInput: "2, 7, 11, 15; target: 9",
-
-    languages: {
-
-      Python: ["def twoSum(nums, target):", "    seen = {}", "    for i, num in enumerate(nums):", "        complement = target - num", "        if complement in seen:", "            return [seen[complement], i]", "        seen[num] = i", "    return []"],
-
-      "C++": ["vector<int> twoSum(vector<int>& nums, int target) {", "    unordered_map<int, int> seen;", "    for (int i = 0; i < nums.size(); i++) {", "        int complement = target - nums[i];", "        if (seen.count(complement)) {", "            return {seen[complement], i};", "        }", "        seen[nums[i]] = i;", "    }", "    return {};","}"],
-
-      Java: ["int[] twoSum(int[] nums, int target) {", "    Map<Integer, Integer> seen = new HashMap<>();", "    for (int i = 0; i < nums.length; i++) {", "        int complement = target - nums[i];", "        if (seen.containsKey(complement)) {", "            return new int[] { seen.get(complement), i };", "        }", "        seen.put(nums[i], i);", "    }", "    return new int[] {};","}"]
-
-    },
-
-    pseudocode: ["create an empty map called seen", "for each number at index i", "calculate complement = target - number", "if complement exists in seen, return both indices", "otherwise store number → i", "return an empty result if no pair exists"],
-
-    parse(input) {
-
-      const match = input.match(/target\s*:\s*(-?\d+)/i);
-
-      const cleaned = input.replace(/;\s*target\s*:\s*-?\d+/i, "").replace(/target\s*:\s*-?\d+/i, "");
-
-      const nums = parseNumbers(cleaned);
-
-      const target = match ? Number(match[1]) : undefined;
-
-      if (target === undefined) throw new Error("For Two Sum, include a target, e.g. 2, 7, 11; target: 9.");
-
-      return { array: nums, target };
-
-    },
-
-    run(input) {
-
-      const {array, target} = this.parse(input); const steps: VisualStep[] = []; const seen: Record<string, number> = {};
-
-      steps.push(step("Initialize the hash map", "Start with an empty map. It stores each previously visited number and its index.", 2, 0, null, array, [{label:"Target",value:String(target)}], [], null));
-
-      for (let i=0;i<array.length;i++) {
-
-        const complement = target! - array[i];
-
-        steps.push(step(`Inspect index ${i}`, `Current value is ${array[i]}. To reach ${target}, we need ${target} − ${array[i]} = ${complement}.`, 4, 2, i, array, [{label:"Current",value:String(array[i])},{label:"Index",value:String(i)},{label:"Complement",value:String(complement)}], Object.entries(seen).map(([label,value])=>({label,value:String(value)})), null));
-
-        if (seen[String(complement)] !== undefined) {
-
-          steps.push(step("Pair found", `${complement} was stored at index ${seen[String(complement)]}. Return both indices; no nested scan is needed.`, 6, 3, i, array, [{label:"Complement",value:String(complement)}], Object.entries(seen).map(([label,value])=>({label,value:String(value)})), `Indices [${seen[String(complement)]}, ${i}] · values ${complement} + ${array[i]} = ${target}`));
-
-          return steps;
-
-        }
-
-        seen[String(array[i])] = i;
-
-        steps.push(step(`Store ${array[i]} → ${i}`, `The complement is not in the map, so store ${array[i]} at index ${i} for future lookups.`, 7, 4, i, array, [{label:"Current",value:String(array[i])},{label:"Complement",value:String(complement)}], Object.entries(seen).map(([label,value])=>({label,value:String(value)})), null));
-
-      }
-
-      steps.push(step("No pair found", "Every number was checked once and no complement matched. Return an empty result.", 8, 5, null, array, [], Object.entries(seen).map(([label,value])=>({label,value:String(value)})), "No pair found"));
-
-      return steps;
-
-    },
-
-    time:"O(n) average", space:"O(n)", timeWhy:"We visit each of the n numbers at most once. Hash-map lookups and inserts take O(1) on average, so the total work grows linearly. In the worst case, hash collisions can make operations slower.", spaceWhy:"If no pair is found, the map may store almost every number. The extra memory therefore grows in proportion to n.", bestCase:"O(1) if the first inspected value finds a previously stored complement (for an input where that is possible).", averageCase:"O(n) expected: one pass with average constant-time map operations.", worstCase:"Usually described as O(n) average-time; pathological hash collisions can degrade map operations.", memoryNote:"Up to n key-index pairs can be stored."
-
-  },
+  
+  adaptProblem(twoSumProblem),
 
   {
 
