@@ -159,6 +159,12 @@ export const maximumSubarrayProblem: ProblemDefinition<
     "nums[i] is an integer",
   ],
   tags: ["Array", "Dynamic Programming", "Divide and Conquer"],
+  inputHint: "Integer array separated by commas (example: -2, 1, -3, 4, -1, 2, 1, -5, 4)",
+  defaultInput: "-2, 1, -3, 4, -1, 2, 1, -5, 4",
+  bestCase: "O(n); the implementation processes the input in a single pass.",
+  averageCase: "O(n); each value is processed once.",
+  worstCase: "O(n); each value is processed once.",
+  memoryNote: "O(1) auxiliary space for the algorithm, excluding visualization snapshots.",
   pseudocode: [
     "Initialize current sum and best sum with the first value",
     "For each remaining value",

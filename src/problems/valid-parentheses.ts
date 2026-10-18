@@ -195,6 +195,12 @@ export const validParenthesesProblem: ProblemDefinition<
     "s contains only parentheses, square brackets, and curly brackets.",
   ],
   tags: ["String", "Stack"],
+  inputHint: "Bracket string (example: ()[]{} or ([)])",
+  defaultInput: "()[]{}",
+  bestCase: "O(1) when an invalid closing bracket is detected immediately.",
+  averageCase: "O(n) in proportion to the input string length.",
+  worstCase: "O(n) when the entire string must be processed.",
+  memoryNote: "O(n) auxiliary space for the stack in the worst case.",
   pseudocode: [
     "Create an empty stack",
     "Read each bracket from left to right",

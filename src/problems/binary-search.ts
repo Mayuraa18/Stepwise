@@ -203,6 +203,12 @@ export const binarySearchProblem: ProblemDefinition<
     "-10^4 <= target <= 10^4",
   ],
   tags: ["Array", "Binary Search"],
+  inputHint: "Sorted array and target (example: -1, 0, 3, 5, 9, 12; target: 9)",
+  defaultInput: "-1, 0, 3, 5, 9, 12; target: 9",
+  bestCase: "O(1) when the target is the middle element on the first check.",
+  averageCase: "O(log n) because the search range is repeatedly halved.",
+  worstCase: "O(log n) when the search continues until the range is exhausted.",
+  memoryNote: "O(1) auxiliary space for the iterative implementation.",
   pseudocode: [
     "Set left to the first index and right to the last",
     "While left is not greater than right",

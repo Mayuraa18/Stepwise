@@ -161,6 +161,12 @@ export const bestTimeToBuySellStockProblem: ProblemDefinition<
     "0 <= prices[i] <= 10^4",
   ],
   tags: ["Array", "Dynamic Programming", "Greedy"],
+  inputHint: "Daily prices separated by commas (example: 7, 1, 5, 3, 6, 4)",
+  defaultInput: "7, 1, 5, 3, 6, 4",
+  bestCase: "O(n); the implementation scans every price.",
+  averageCase: "O(n); each price is processed once.",
+  worstCase: "O(n); each price is processed once.",
+  memoryNote: "O(1) auxiliary space, excluding visualization snapshots.",
   pseudocode: [
     "Set minimum price to infinity and best profit to zero",
     "For each day's price",

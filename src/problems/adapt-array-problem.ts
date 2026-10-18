@@ -103,20 +103,14 @@ export function adaptArrayProblem<
     });
   }
 
-  const isStockProblem = definition.leetcodeNumber === 121;
-
   return {
     id: String(definition.leetcodeNumber),
     title: definition.title,
     difficulty: definition.difficulty,
     category: definition.tags.join(", "),
     description: definition.description,
-    inputHint: isStockProblem
-      ? "Daily prices separated by commas"
-      : "Array values separated by commas",
-    defaultInput: isStockProblem
-      ? "7, 1, 5, 3, 6, 4"
-      : "-2, 1, -3, 4, -1, 2, 1, -5, 4",
+    inputHint: definition.inputHint,
+    defaultInput: definition.defaultInput,
     languages: definition.solutions,
     pseudocode: definition.pseudocode,
     parse,
@@ -125,9 +119,9 @@ export function adaptArrayProblem<
     space: definition.complexity.space,
     timeWhy: definition.complexity.timeExplanation,
     spaceWhy: definition.complexity.spaceExplanation,
-    bestCase: definition.complexity.time,
-    averageCase: definition.complexity.time,
-    worstCase: definition.complexity.time,
-    memoryNote: definition.complexity.spaceExplanation,
+    bestCase: definition.bestCase,
+    averageCase: definition.averageCase,
+    worstCase: definition.worstCase,
+    memoryNote: definition.memoryNote,
   };
 }

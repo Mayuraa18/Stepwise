@@ -189,6 +189,12 @@ export const twoSumProblem: ProblemDefinition<
     "The target is a finite number.",
   ],
   tags: ["Array", "Hash Table"],
+  inputHint: "Array values and target (example: 2, 7, 11, 15; target: 9)",
+  defaultInput: "2, 7, 11, 15; target: 9",
+  bestCase: "O(1) when a matching complement is found immediately.",
+  averageCase: "O(n) expected time using a hash map.",
+  worstCase: "O(n) expected time under standard hash-map assumptions.",
+  memoryNote: "O(n) auxiliary space for stored values.",
   pseudocode: [
     "Create an empty map called seen",
     "For each number at index i",

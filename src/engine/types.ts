@@ -73,6 +73,12 @@ export type ProblemDefinition<Input, Output, State> = {
   title: string;
   difficulty: Difficulty;
   description: string;
+  inputHint: string;
+  defaultInput: string;
+  bestCase: string;
+  averageCase: string;
+  worstCase: string;
+  memoryNote: string;
   examples: ProblemExample[];
   constraints: string[];
   tags: string[];

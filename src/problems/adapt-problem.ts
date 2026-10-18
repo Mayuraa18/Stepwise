@@ -151,12 +151,8 @@ export function adaptProblem<
     difficulty: definition.difficulty,
     category: definition.tags.join(", "),
     description: definition.description,
-    inputHint: definition.leetcodeNumber === 704
-      ? "Sorted array, then target (example: -1, 0, 3, 5, 9, 12; target: 9)"
-      : "Array values, then target (example: 2, 7, 11, 15; target: 9)",
-    defaultInput: definition.leetcodeNumber === 704
-      ? "-1, 0, 3, 5, 9, 12; target: 9"
-      : "2, 7, 11, 15; target: 9",
+    inputHint: definition.inputHint,
+    defaultInput: definition.defaultInput,
     languages: definition.solutions,
     pseudocode: definition.pseudocode,
     parse,
@@ -165,11 +161,9 @@ export function adaptProblem<
     space: definition.complexity.space,
     timeWhy: definition.complexity.timeExplanation,
     spaceWhy: definition.complexity.spaceExplanation,
-    bestCase: definition.leetcodeNumber === 704
-      ? "O(1) when the target is at the middle index."
-      : "O(n) in the worst case for a hash-map search.",
-    averageCase: definition.complexity.time,
-    worstCase: definition.complexity.time,
-    memoryNote: definition.complexity.spaceExplanation,
+    bestCase: definition.bestCase,
+    averageCase: definition.averageCase,
+    worstCase: definition.worstCase,
+    memoryNote: definition.memoryNote,
   };
 }
