@@ -39,36 +39,6 @@ const problems: Problem[] = [
 
   {
 
-    id:"121",title:"Best Time to Buy and Sell Stock",difficulty:"Easy",category:"Greedy",
-
-    description:"Choose one day to buy and a later day to sell for the maximum profit.",
-
-    inputHint:"Daily prices (example: 7, 1, 5, 3, 6, 4)",
-
-    defaultInput:"7, 1, 5, 3, 6, 4",
-
-    languages:{
-
-      Python:["def maxProfit(prices):","    min_price = float('inf')","    best = 0","    for price in prices:","        min_price = min(min_price, price)","        best = max(best, price - min_price)","    return best"],
-
-      "C++":["int maxProfit(vector<int>& prices) {","    int minPrice = INT_MAX, best = 0;","    for (int price : prices) {","        minPrice = min(minPrice, price);","        best = max(best, price - minPrice);","    }","    return best;","}"],
-
-      Java:["int maxProfit(int[] prices) {","    int minPrice = Integer.MAX_VALUE, best = 0;","    for (int price : prices) {","        minPrice = Math.min(minPrice, price);","        best = Math.max(best, price - minPrice);","    }","    return best;","}"]
-
-    },
-
-    pseudocode:["set minimum price to infinity and best profit to zero","for each day's price","update the lowest price seen so far","calculate profit if selling today","keep the largest profit","return the best profit"],
-
-    parse(input){return {array:parseNumbers(input)};},
-
-    run(input){const {array}=this.parse(input);let minPrice=Infinity,best=0;const s:VisualStep[]=[step("Initialize tracking values","We need the cheapest price seen so far and the best profit. Start with infinity and zero.",2,0,null,array,[{label:"Min price",value:"∞"},{label:"Best profit",value:"0"}],[],null)];array.forEach((price,i)=>{if(price<minPrice)minPrice=price;s.push(step(`Check day ${i+1}`,`Price is ${price}. Lowest price seen so far is ${minPrice}.`,5,2,i,array,[{label:"Price",value:String(price)},{label:"Min price",value:String(minPrice)}],[],null));const profit=price-minPrice;if(profit>best)best=profit;s.push(step("Update possible profit",`Selling today would give ${price} − ${minPrice} = ${profit}. Best profit so far is ${best}.`,6,3,i,array,[{label:"Today's profit",value:String(profit)},{label:"Best profit",value:String(best)}],[],null));});s.push(step("Maximum profit",`The best achievable profit is ${best}. Buy before selling; a negative profit is never chosen.`,7,4,null,array,[{label:"Best profit",value:String(best)}],[],`Maximum profit: ${best}`));return s;},
-
-    time:"O(n)",space:"O(1)",timeWhy:"Each price is processed once. Updating the minimum and comparing the current profit are constant-time operations, so doubling the number of days roughly doubles the work.",spaceWhy:"Only the minimum price and best profit are tracked. The algorithm does not need a second array or a map.",bestCase:"O(n) for the standard single-pass implementation, even if the first price is ideal.",averageCase:"O(n): one pass over all prices.",worstCase:"O(n): every day is visited once.",memoryNote:"Two main values are kept: minimum price and best profit."
-
-  },
-
-  {
-
     id:"53",title:"Maximum Subarray",difficulty:"Medium",category:"Dynamic Programming",
 
     description:"Find the contiguous subarray with the largest sum.",
