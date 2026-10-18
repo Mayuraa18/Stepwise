@@ -18,17 +18,27 @@ type StockState = {
   result: number | null;
 };
 
+const MAX_VISUALIZATION_ITEMS = 200;
+
 function parseInput(rawInput: string): StockInput {
-  const prices = rawInput
-    .trim()
-    .split(/[,\s]+/)
-    .filter(Boolean)
-    .map(Number);
+  if (rawInput.length > 10_000) {
+    throw new Error("Input is too long. Keep it under 10,000 characters.");
+  }
+
+  const values = rawInput.trim().split(/[,\s]+/).filter(Boolean);
 
   if (
-    prices.length === 0 ||
-    prices.some((price) => !Number.isFinite(price) || price < 0)
+    values.length === 0 ||
+    values.length > MAX_VISUALIZATION_ITEMS
   ) {
+    throw new Error(
+      `Enter between 1 and ${MAX_VISUALIZATION_ITEMS} daily prices.`
+    );
+  }
+
+  const prices = values.map(Number);
+
+  if (prices.some((price) => !Number.isFinite(price) || price < 0)) {
     throw new Error(
       "Enter non-negative daily prices separated by commas."
     );
@@ -56,13 +66,14 @@ function createSteps({
   let minPrice = Infinity;
   let bestProfit = 0;
 
+  // The input array is never mutated, so every snapshot can safely share it.
   const snapshot = (
     currentIndex: number | null,
     currentPrice: number | null,
     currentProfit: number | null,
     result: number | null = null,
   ): StockState => ({
-    prices: [...prices],
+    prices,
     currentIndex,
     currentPrice,
     minPrice: minPrice === Infinity ? null : minPrice,

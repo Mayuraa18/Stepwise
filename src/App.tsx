@@ -1,104 +1,10 @@
+
 import { useEffect, useMemo, useState } from "react";
 import type { Language, VisualStep, Problem } from "./engine/types";
 import "./App.css";
 import { modularProblems } from "./problems/registry.ts";
 
-
-function step(
-
-  title: string, explanation: string, line: number, pseudocodeLine: number,
-
-  currentIndex: number | null, array: number[], variables: {label: string; value: string}[],
-
-  memory: {label: string; value: string}[], result: string | null,
-
-  activeRange?: [number, number]
-
-): VisualStep {
-
-  return { title, explanation, line, pseudocodeLine, currentIndex, array, variables, memory, result, activeRange };
-
-}
-
-
-
-function parseNumbers(input: string): number[] {
-
-  const values = input.trim().split(/[\s,]+/).filter(Boolean).map(Number);
-
-  if (!values.length || values.some((n) => !Number.isFinite(n))) throw new Error("Enter one or more valid numbers separated by commas or spaces.");
-
-  return values;
-
-}
-
-
-
-const problems: Problem[] = [
-  ...modularProblems,
-
-  {
-
-    id:"53",title:"Maximum Subarray",difficulty:"Medium",category:"Dynamic Programming",
-
-    description:"Find the contiguous subarray with the largest sum.",
-
-    inputHint:"Array values (example: -2, 1, -3, 4, -1, 2, 1, -5, 4)",
-
-    defaultInput:"-2, 1, -3, 4, -1, 2, 1, -5, 4",
-
-    languages:{
-
-      Python:["def maxSubArray(nums):","    current = best = nums[0]","    for num in nums[1:]:","        current = max(num, current + num)","        best = max(best, current)","    return best"],
-
-      "C++":["int maxSubArray(vector<int>& nums) {","    int current = nums[0], best = nums[0];","    for (int i = 1; i < nums.size(); i++) {","        current = max(nums[i], current + nums[i]);","        best = max(best, current);","    }","    return best;","}"],
-
-      Java:["int maxSubArray(int[] nums) {","    int current = nums[0], best = nums[0];","    for (int i = 1; i < nums.length; i++) {","        current = Math.max(nums[i], current + nums[i]);","        best = Math.max(best, current);","    }","    return best;","}"]
-
-    },
-
-    pseudocode:["initialize current sum and best sum from first value","for each remaining value","choose between starting fresh or extending current subarray","update the best sum seen so far","return the best sum"],
-
-    parse(input){return {array:parseNumbers(input)};},
-
-    run(input){const {array}=this.parse(input);let current=array[0],best=array[0];const s:VisualStep[]=[step("Initialize sums","Start both current sum and best sum at the first value. This also handles arrays containing only negative values.",2,0,0,array,[{label:"Current sum",value:String(current)},{label:"Best sum",value:String(best)}],[],null)];for(let i=1;i<array.length;i++){const extended=current+array[i];current=Math.max(array[i],extended);best=Math.max(best,current);s.push(step(`Process value ${array[i]}`,`Compare starting a new subarray at ${array[i]} with extending the previous sum (${extended}). Current sum becomes ${current}; best remains ${best}.`,4,2,i,array,[{label:"Value",value:String(array[i])},{label:"Current sum",value:String(current)},{label:"Best sum",value:String(best)}],[],null));}s.push(step("Maximum subarray sum",`The largest contiguous-subarray sum found is ${best}.`,6,4,null,array,[{label:"Best sum",value:String(best)}],[],`Maximum subarray sum: ${best}`));return s;},
-
-    time:"O(n)",space:"O(1)",timeWhy:"The algorithm makes one pass and does constant work per value: decide whether to extend the current subarray, then update the best sum.",spaceWhy:"Only two running sums are stored. No table of all subarray sums is created.",bestCase:"O(n) for this one-pass method.",averageCase:"O(n): one constant-time update per element.",worstCase:"O(n): each element is processed once.",memoryNote:"Two running sums, independent of the input length."
-
-  },
-
-  {
-
-    id:"20",title:"Valid Parentheses",difficulty:"Easy",category:"Stack",
-
-    description:"Check whether every opening bracket is closed in the correct order.",
-
-    inputHint:"Bracket string (example: ()[]{} or ([)] )",
-
-    defaultInput:"()[]{}",
-
-    languages:{
-
-      Python:["def isValid(s):","    stack = []","    pairs = {')':'(', ']':'[', '}':'{'}","    for char in s:","        if char in pairs:","            if not stack or stack.pop() != pairs[char]:","                return False","        else:","            stack.append(char)","    return not stack"],
-
-      "C++":["bool isValid(string s) {","    stack<char> st;","    for (char c : s) {","        if (c == '(' || c == '[' || c == '{') st.push(c);","        else {","            if (st.empty()) return false;","            char top = st.top(); st.pop();","            if ((c == ')' && top != '(') || (c == ']' && top != '[') || (c == '}' && top != '{')) return false;","        }","    }","    return st.empty();","}"],
-
-      Java:["boolean isValid(String s) {","    Deque<Character> stack = new ArrayDeque<>();","    for (char c : s.toCharArray()) {","        if (c == '(' || c == '[' || c == '{') stack.push(c);","        else {","            if (stack.isEmpty()) return false;","            char top = stack.pop();","            if ((c == ')' && top != '(') || (c == ']' && top != '[') || (c == '}' && top != '{')) return false;","        }","    }","    return stack.isEmpty();","}"]
-
-    },
-
-    pseudocode:["create an empty stack","read each bracket from left to right","push opening brackets","for a closing bracket, check the most recent opening bracket","return false if the pair/order is invalid","valid only if the stack is empty at the end"],
-
-    parse(input){const text=input.trim();if(!text||!Array.from(text).every(c=>"()[]{}".includes(c)))throw new Error("Enter a bracket string using only (, ), [, ], {, }.");return {array:Array.from(text).map(c=>c.charCodeAt(0)),text};},
-
-    run(input){const {text}=this.parse(input);const chars=Array.from(text??"");const stack:string[]=[];const pairs:Record<string,string>={")":"(","]":"[","}":"{"};const arr=chars.map(c=>c.charCodeAt(0));const s:VisualStep[]=[step("Create an empty stack","The stack remembers opening brackets. The most recent opening bracket must close first.",2,0,null,arr,[{label:"Input",value:text??""}],[],null)];for(let i=0;i<chars.length;i++){const c=chars[i];if("([{".includes(c)){stack.push(c);s.push(step(`Push '${c}'`, `'${c}' is an opening bracket, so push it onto the stack.`,9,2,i,arr,[{label:"Character",value:c},{label:"Position",value:String(i)}],stack.map((v,j)=>({label:`Stack ${j+1}`,value:v})),null));}else{const top=stack.pop();const ok=top===pairs[c];s.push(step(ok?`Match '${c}'`:`Invalid closing '${c}'`,ok?`'${c}' correctly closes '${top}'. Remove the opening bracket from the stack.`:`Expected a closing bracket for '${top??"nothing"}', but found '${c}'. The sequence is invalid.`,6,3,i,arr,[{label:"Character",value:c},{label:"Top before pop",value:top??"empty"}],stack.map((v,j)=>({label:`Stack ${j+1}`,value:v})),ok?null:"Invalid bracket sequence"));if(!ok)return s;}}s.push(step(stack.length===0?"Valid parentheses":"Unclosed brackets",stack.length===0?"All brackets matched in the correct order, and the stack is empty.":"Some opening brackets remain without matching closers.",10,5,null,arr,[],stack.map((v,j)=>({label:`Stack ${j+1}`,value:v})),stack.length===0?"Valid bracket sequence":"Invalid · opening brackets remain"));return s;},
-
-    time:"O(n)",space:"O(n)",timeWhy:"Each character is examined once. Stack push and pop operations take O(1), so processing n characters takes linear time.",spaceWhy:"In the worst case, all characters are opening brackets and must remain on the stack until the end. Stack size can therefore grow with n.",bestCase:"O(1) if an invalid closing bracket is detected immediately; otherwise input must be scanned.",averageCase:"O(n): scan characters and use constant-time stack operations.",worstCase:"O(n): every character is processed.",memoryNote:"The stack can hold up to n opening brackets."
-
-  }
-
-];
-
+const problems: Problem[] = [...modularProblems];
 
 
 function lineFor(step: VisualStep, language: Language, problem: Problem): number {
