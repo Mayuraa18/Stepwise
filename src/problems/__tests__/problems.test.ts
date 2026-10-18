@@ -5,6 +5,7 @@ import { binarySearchProblem } from "../binary-search.ts";
 import { bestTimeToBuySellStockProblem } from "../best-time-to-buy-sell-stock.ts";
 import { maximumSubarrayProblem } from "../maximum-subarray.ts";
 import { validParenthesesProblem } from "../valid-parentheses.ts";
+import { modularProblems } from "../registry.ts";
 
 describe("Two Sum", () => {
   it("finds the matching pair", () => {
@@ -208,5 +209,18 @@ describe("Snapshot safety", () => {
     const subarrayOriginal = [...subarrayInput.nums];
     maximumSubarrayProblem.createSteps(subarrayInput);
     expect(subarrayInput.nums).toEqual(subarrayOriginal);
+  });
+});
+
+
+describe("Array visualization snapshots", () => {
+  it("gives each Stock visualization step an independent array snapshot", () => {
+    const stock = modularProblems.find((problem) => problem.id === "121");
+    expect(stock).toBeDefined();
+
+    const steps = stock!.run("7, 1, 5, 3");
+    expect(steps.length).toBeGreaterThan(1);
+    expect(steps[0].array).toEqual(steps[1].array);
+    expect(steps[0].array).not.toBe(steps[1].array);
   });
 });

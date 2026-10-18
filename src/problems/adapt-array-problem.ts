@@ -82,7 +82,7 @@ export function adaptArrayProblem<
         line: step.codeLine,
         pseudocodeLine: step.pseudocodeLine,
         currentIndex: state.currentIndex,
-        array: inputArray,
+        array: [...inputArray],
         variables,
         memory,
                 result:

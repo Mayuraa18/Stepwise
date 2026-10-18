@@ -135,9 +135,20 @@ export default function App() {
   const [complexityN, setComplexityN] = useState(8);
   const [complexityOpen, setComplexityOpen] = useState(false);
   const problem = problems.find(p => p.id === activeId) ?? problems[0];
-  const steps = useMemo(() => {
-    try { return problem.run(input); } catch { return []; }
+  const execution = useMemo(() => {
+    try {
+      return { steps: problem.run(input), error: "" };
+    } catch (err) {
+      return {
+        steps: [],
+        error: err instanceof Error
+          ? err.message
+          : "Could not generate visualization.",
+      };
+    }
   }, [problem, input]);
+  const steps = execution.steps;
+  const executionError = execution.error;
   const step = steps[Math.min(stepIndex, Math.max(steps.length-1,0))];
   const highlightedLine = step ? lineFor(step, language, problem) : 1;
 
@@ -321,6 +332,7 @@ export default function App() {
         <div className="search-row"><input id="problem-search" value={problemQuery} onChange={e=>setProblemQuery(e.target.value)} placeholder="Enter number or problem name"/><button type="submit">Open problem →</button></div>
 
         {error && <p className="error" role="alert">{error}</p>}
+        {executionError && <p className="error" role="alert">{executionError}</p>}
 
         <div className="problem-quick-list">{problems.map(p=><button type="button" key={p.id} className={p.id===activeId?"quick-problem active":"quick-problem"} onClick={(event)=>{animate(event.currentTarget,{scale:[0.97,1],duration:220,ease:"out(3)"});setProblemQuery(p.id);setActiveId(p.id);setInput(p.defaultInput);setInputDraft(p.defaultInput);setStepIndex(0);setSelectedCaseId("default");setError("");}}><span>#{p.id}</span>{p.title}<small>{p.difficulty}</small></button>)}</div>
 
