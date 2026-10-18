@@ -1478,3 +1478,123 @@ button:not(:disabled):active {
   outline-offset: 3px;
 }
 /* Dark Coffee has been removed from the theme picker; keep Deep Navy as the default fallback. */
+
+
+/* Catalog search and filters */
+.problem-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.problem-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+  color: var(--muted-color);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.problem-filters select {
+  max-width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--soft-bg);
+  color: var(--text-color);
+}
+
+.problem-filters select:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.problem-result-count {
+  margin: 14px 0 0;
+  color: var(--muted-color);
+  font-size: 12px;
+}
+
+.problem-empty-state {
+  margin: 14px 0 0;
+  padding: 16px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  color: var(--muted-color);
+  font-size: 13px;
+}
+
+@media (max-width: 520px) {
+  .problem-filters {
+    flex-direction: column;
+  }
+
+  .problem-filters label {
+    min-width: 0;
+  }
+}
+
+
+/* Consistent, high-contrast difficulty badges across all themes */
+.difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 4px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.difficulty-badge.difficulty-easy {
+  background: #dcfce7 !important;
+  border-color: #86c99b !important;
+  color: #14532d !important;
+}
+
+.difficulty-badge.difficulty-medium {
+  background: #fef3c7 !important;
+  border-color: #e5c46a !important;
+  color: #78350f !important;
+}
+
+.difficulty-badge.difficulty-hard {
+  background: #fee2e2 !important;
+  border-color: #f0a0a0 !important;
+  color: #7f1d1d !important;
+}
+
+/* Subtle improvements to filter controls */
+.problem-filters select {
+  min-height: 42px;
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.problem-filters select:hover {
+  border-color: var(--accent-color);
+}
+
+.problem-filters select:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.quick-problem .difficulty-badge {
+  margin-left: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .problem-filters select {
+    transition: none;
+  }
+}

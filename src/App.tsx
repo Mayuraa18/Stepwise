@@ -111,7 +111,9 @@ export default function App() {
 
 
 
-  const [problemQuery, setProblemQuery] = useState("1");
+  const [problemQuery, setProblemQuery] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState("All");
+  const [topicFilter, setTopicFilter] = useState("All");
 
   const [activeId, setActiveId] = useState<string>("1");
 
@@ -139,6 +141,33 @@ export default function App() {
   const [complexityN, setComplexityN] = useState(8);
   const [complexityOpen, setComplexityOpen] = useState(false);
   const problem = problems.find(p => p.id === activeId) ?? problems[0];
+
+  const availableTopics = useMemo(
+    () => [...new Set(problems.flatMap(p => p.category.split(", ").map(tag => tag.trim())))].sort(),
+    [],
+  );
+
+  const filteredProblems = useMemo(() => {
+    const query = problemQuery.trim().toLowerCase();
+
+    return problems.filter(p => {
+      const matchesQuery =
+        !query ||
+        p.id.toLowerCase().includes(query) ||
+        p.title.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query);
+
+      const matchesDifficulty =
+        difficultyFilter === "All" || p.difficulty === difficultyFilter;
+
+      const matchesTopic =
+        topicFilter === "All" ||
+        p.category.split(", ").some(tag => tag.trim() === topicFilter);
+
+      return matchesQuery && matchesDifficulty && matchesTopic;
+    });
+  }, [problemQuery, difficultyFilter, topicFilter]);
+
   const execution = useMemo(() => {
     try {
       return { steps: problem.run(input), error: "" };
@@ -221,9 +250,17 @@ export default function App() {
 
     const q = problemQuery.trim().toLowerCase();
 
-    const found = problems.find(p => p.id === q || p.title.toLowerCase() === q || p.title.toLowerCase().includes(q));
+    const found = problems.find(
+      p =>
+        p.id.toLowerCase() === q ||
+        p.title.toLowerCase() === q ||
+        p.title.toLowerCase().includes(q),
+    );
 
-    if (!found) { setError("Problem not found yet. Try 1, 20, 53, 121, 704 or a problem name."); return; }
+    if (!found) {
+      setError("No supported visualizer found. Try a problem number or title.");
+      return;
+    }
 
     setActiveId(found.id); setInput(found.defaultInput); setInputDraft(found.defaultInput);
 
@@ -329,22 +366,85 @@ export default function App() {
 
       <div className="intro"><p className="eyebrow">INTERACTIVE DSA LAB</p><h1>Understand the algorithm.</h1><p className="subtitle">Follow every line, variable, and decision as the code executes.</p></div>
 
-      <form className="search" onSubmit={openProblem}>
+      <form className="search" autoComplete="off" onSubmit={openProblem}>
 
         <label htmlFor="problem-search">LeetCode problem</label>
 
-        <div className="search-row"><input id="problem-search" value={problemQuery} onChange={e=>setProblemQuery(e.target.value)} placeholder="Enter number or problem name"/><button type="submit">Open problem →</button></div>
+        <div className="search-row"><input id="problem-search" name="stepwise-problem-search" autoComplete="off" value={problemQuery} onChange={e=>{setProblemQuery(e.target.value);setError("");}} placeholder="Enter number or problem name"/><button type="submit">Open problem →</button></div>
 
         {error && <p className="error" role="alert">{error}</p>}
         {executionError && <p className="error" role="alert">{executionError}</p>}
 
-        <div className="problem-quick-list">{problems.map(p=><button type="button" key={p.id} className={p.id===activeId?"quick-problem active":"quick-problem"} onClick={(event)=>{animate(event.currentTarget,{scale:[0.97,1],duration:220,ease:"out(3)"});setProblemQuery(p.id);setActiveId(p.id);setInput(p.defaultInput);setInputDraft(p.defaultInput);setStepIndex(0);setSelectedCaseId("default");setError("");}}><span>#{p.id}</span>{p.title}<small>{p.difficulty}</small></button>)}</div>
+        <div className="problem-filters">
+          <label>
+            Difficulty
+            <select
+              value={difficultyFilter}
+              onChange={e => setDifficultyFilter(e.target.value)}
+            >
+              <option value="All">All difficulties</option>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </label>
+          <label>
+            Topic
+            <select
+              value={topicFilter}
+              onChange={e => setTopicFilter(e.target.value)}
+            >
+              <option value="All">All topics</option>
+              {availableTopics.map(topic => (
+                <option key={topic} value={topic}>{topic}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <p className="problem-result-count" aria-live="polite">
+          {filteredProblems.length} {filteredProblems.length === 1 ? "problem" : "problems"} found
+        </p>
+
+        <div className="problem-quick-list">
+          {filteredProblems.map(p => (
+            <button
+              type="button"
+              key={p.id}
+              className={p.id === activeId ? "quick-problem active" : "quick-problem"}
+              aria-pressed={p.id === activeId}
+              onClick={event => {
+                animate(event.currentTarget, {
+                  scale: [0.97, 1],
+                  duration: 220,
+                  ease: "out(3)",
+                });
+                setActiveId(p.id);
+                setInput(p.defaultInput);
+                setInputDraft(p.defaultInput);
+                setStepIndex(0);
+                setSelectedCaseId("default");
+                setError("");
+              }}
+            >
+              <span>#{p.id}</span>
+              {p.title}
+              <small className={`difficulty-badge difficulty-${p.difficulty.toLowerCase()}`}>{p.difficulty}</small>
+            </button>
+          ))}
+        </div>
+
+        {filteredProblems.length === 0 && (
+          <p className="problem-empty-state">
+            No matching problems. Try another search or reset the filters.
+          </p>
+        )}
 
       </form>
 
       <section className="problem-heading">
 
-        <div><div className="problem-meta"><span>PROBLEM #{problem.id}</span><span className="difficulty">{problem.difficulty}</span><span className="category-pill">{problem.category}</span></div><h2>{problem.title}</h2><p>{problem.description}</p></div>
+        <div><div className="problem-meta"><span>PROBLEM #{problem.id}</span><span className={`difficulty-badge difficulty-${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</span><span className="category-pill">{problem.category}</span></div><h2>{problem.title}</h2><p>{problem.description}</p></div>
 
       </section>
 
