@@ -3,6 +3,7 @@ import type {
   ExecutionStep,
   ProblemDefinition,
 } from "../engine/types.ts";
+import { MAX_RAW_INPUT_LENGTH, MAX_VISUALIZATION_ITEMS } from "../engine/limits.ts";
 
 type StockInput = {
   prices: number[];
@@ -18,11 +19,9 @@ type StockState = {
   result: number | null;
 };
 
-const MAX_VISUALIZATION_ITEMS = 200;
-
 function parseInput(rawInput: string): StockInput {
-  if (rawInput.length > 10_000) {
-    throw new Error("Input is too long. Keep it under 10,000 characters.");
+  if (rawInput.length > MAX_RAW_INPUT_LENGTH) {
+    throw new Error(`Input is too long. Maximum: ${MAX_RAW_INPUT_LENGTH} characters.`);
   }
 
   const values = rawInput.trim().split(/[,\s]+/).filter(Boolean);

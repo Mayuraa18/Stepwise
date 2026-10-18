@@ -3,6 +3,7 @@ import type {
   ExecutionStep,
   ProblemDefinition,
 } from "../engine/types.ts";
+import { MAX_RAW_INPUT_LENGTH, MAX_VISUALIZATION_ITEMS } from "../engine/limits.ts";
 
 type BinarySearchInput = {
   nums: number[];
@@ -20,6 +21,9 @@ type BinarySearchState = {
 };
 
 function parseInput(rawInput: string): BinarySearchInput {
+  if (rawInput.length > MAX_RAW_INPUT_LENGTH) {
+    throw new Error(`Input is too long. Maximum: ${MAX_RAW_INPUT_LENGTH} characters.`);
+  }
   const parsed: unknown = JSON.parse(rawInput);
 
   if (typeof parsed !== "object" || parsed === null ||
@@ -40,6 +44,10 @@ function parseInput(rawInput: string): BinarySearchInput {
     !Number.isFinite(input.target)
   ) {
     throw new Error("nums must contain finite numbers and target must be a finite number.");
+  }
+
+  if (input.nums.length < 1 || input.nums.length > MAX_VISUALIZATION_ITEMS) {
+    throw new Error(`Enter between 1 and ${MAX_VISUALIZATION_ITEMS} numbers.`);
   }
 
   const nums = [...input.nums] as number[];

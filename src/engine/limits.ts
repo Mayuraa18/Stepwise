@@ -1,0 +1,2 @@
+export const MAX_VISUALIZATION_ITEMS = 200;
+export const MAX_RAW_INPUT_LENGTH = 10_000;

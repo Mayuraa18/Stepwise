@@ -2,6 +2,7 @@ import type {
   ExecutionStep,
   ProblemDefinition,
 } from "../engine/types.ts";
+import { MAX_RAW_INPUT_LENGTH, MAX_VISUALIZATION_ITEMS } from "../engine/limits.ts";
 
 type TwoSumInput = {
   nums: number[];
@@ -19,6 +20,9 @@ type TwoSumState = {
 };
 
 function parseInput(rawInput: string): TwoSumInput {
+  if (rawInput.length > MAX_RAW_INPUT_LENGTH) {
+    throw new Error(`Input is too long. Maximum: ${MAX_RAW_INPUT_LENGTH} characters.`);
+  }
   const parsed: unknown = JSON.parse(rawInput);
 
   if (
@@ -45,6 +49,10 @@ function parseInput(rawInput: string): TwoSumInput {
     throw new Error(
       "nums must contain finite numbers and target must be a finite number."
     );
+  }
+
+  if (input.nums.length < 2 || input.nums.length > MAX_VISUALIZATION_ITEMS) {
+    throw new Error(`Enter between 2 and ${MAX_VISUALIZATION_ITEMS} numbers.`);
   }
 
   return {
@@ -81,7 +89,7 @@ function createSteps({
     complement: number | null,
     result: number[] | null
   ): TwoSumState => ({
-    nums: [...nums],
+    nums,
     target,
     currentIndex,
     currentValue:

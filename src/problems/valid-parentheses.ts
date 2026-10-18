@@ -3,6 +3,7 @@ import type {
   ExecutionStep,
   ProblemDefinition,
 } from "../engine/types.ts";
+import { MAX_RAW_INPUT_LENGTH, MAX_VISUALIZATION_ITEMS } from "../engine/limits.ts";
 
 type ParenthesesInput = {
   text: string;
@@ -16,18 +17,19 @@ type ParenthesesState = {
   result: boolean | null;
 };
 
-const MAX_INPUT_LENGTH = 200;
-
 function parseInput(rawInput: string): ParenthesesInput {
+  if (rawInput.length > MAX_RAW_INPUT_LENGTH) {
+    throw new Error(`Input is too long. Maximum: ${MAX_RAW_INPUT_LENGTH} characters.`);
+  }
   const text = rawInput.trim();
 
   if (text.length === 0) {
     throw new Error("Enter a bracket string.");
   }
 
-  if (text.length > MAX_INPUT_LENGTH) {
+  if (text.length > MAX_VISUALIZATION_ITEMS) {
     throw new Error(
-      `Keep the bracket string to ${MAX_INPUT_LENGTH} characters or fewer.`
+      `Keep the bracket string to ${MAX_VISUALIZATION_ITEMS} characters or fewer.`
     );
   }
 
