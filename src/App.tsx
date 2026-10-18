@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Language, VisualStep, Problem } from "./engine/types";
 import "./App.css";
-import { twoSumProblem } from "./problems/two-sum.ts";
-import { adaptProblem } from "./problems/adapt-problem.ts";
-import { binarySearchProblem } from "./problems/binary-search.ts";
+import { modularProblems } from "./problems/registry.ts";
 
 
 function step(
@@ -37,41 +35,7 @@ function parseNumbers(input: string): number[] {
 
 
 const problems: Problem[] = [
-  
-  adaptProblem(twoSumProblem),
-  adaptProblem(binarySearchProblem),
-
-  {
-
-    id:"704", title:"Binary Search", difficulty:"Easy", category:"Binary Search",
-
-    description:"Find a target in a sorted array by repeatedly halving the search range.",
-
-    inputHint:"Sorted array, then target (example: -1, 0, 3, 5, 9, 12; target: 9)",
-
-    defaultInput:"-1, 0, 3, 5, 9, 12; target: 9",
-
-    languages:{
-
-      Python:["def search(nums, target):","    left, right = 0, len(nums) - 1","    while left <= right:","        mid = (left + right) // 2","        if nums[mid] == target:","            return mid","        if nums[mid] < target:","            left = mid + 1","        else:","            right = mid - 1","    return -1"],
-
-      "C++":["int search(vector<int>& nums, int target) {","    int left = 0, right = nums.size() - 1;","    while (left <= right) {","        int mid = left + (right-left)/2;","        if (nums[mid] == target) return mid;","        if (nums[mid] < target) left = mid + 1;","        else right = mid - 1;","    }","    return -1;","}"],
-
-      Java:["int search(int[] nums, int target) {","    int left = 0, right = nums.length - 1;","    while (left <= right) {","        int mid = left + (right-left)/2;","        if (nums[mid] == target) return mid;","        if (nums[mid] < target) left = mid + 1;","        else right = mid - 1;","    }","    return -1;","}"]
-
-    },
-
-    pseudocode:["set left to first index and right to last index","while left is not past right","check the middle index","if middle value equals target, return its index","if middle value is smaller, search right half","otherwise search left half","return -1 when range is empty"],
-
-    parse(input){const m=input.match(/target\s*:\s*(-?\d+)/i);const cleaned=input.replace(/;\s*target\s*:\s*-?\d+/i,"").replace(/target\s*:\s*-?\d+/i,"");const array=parseNumbers(cleaned);if(!m)throw new Error("Include a target, e.g. 1, 3, 5; target: 3.");if(array.some((v,i)=>i>0&&array[i-1]>v))throw new Error("Binary Search needs a sorted array. Sort the values first.");return {array,target:Number(m[1])};},
-
-    run(input){const {array,target}=this.parse(input);if (target === undefined) {
-  throw new Error("A target value is required for Binary Search.");
-}let left=0,right=array.length-1;const s:VisualStep[]=[step("Set search boundaries","Start with the full sorted array: left is the first index and right is the last.",2,0,null,array,[{label:"Left",value:String(left)},{label:"Right",value:String(right)},{label:"Target",value:String(target)}],[],null,[left,right])];while(left<=right){const mid=Math.floor((left+right)/2);s.push(step(`Check middle index ${mid}`,`The middle index is ⌊(${left} + ${right}) / 2⌋ = ${mid}. Compare ${array[mid]} with target ${target}.`,4,2,mid,array,[{label:"Left",value:String(left)},{label:"Mid",value:String(mid)},{label:"Right",value:String(right)}],[],null,[left,right]));if(array[mid]===target){s.push(step("Target found",`${array[mid]} equals ${target}; return index ${mid}.`,5,3,mid,array,[{label:"Index",value:String(mid)}],[],`Target found at index ${mid}`,[left,right]));return s;}if(array[mid]<target){s.push(step("Discard left half",`${array[mid]} is smaller than ${target}, so every value at or left of mid can be skipped.`,6,4,mid,array,[{label:"New left",value:String(mid+1)},{label:"Right",value:String(right)}],[],null,[mid+1,right]));left=mid+1;}else{s.push(step("Discard right half",`${array[mid]} is larger than ${target}, so every value at or right of mid can be skipped.`,7,5,mid,array,[{label:"Left",value:String(left)},{label:"New right",value:String(mid-1)}],[],null,[left,mid-1]));right=mid-1;}}s.push(step("Target not found","The search range is empty, so the target is not present.",9,6,null,array,[{label:"Left",value:String(left)},{label:"Right",value:String(right)}],[],"Target not found · return -1"));return s;},
-
-    time:"O(log n)",space:"O(1)",timeWhy:"Each comparison removes about half of the remaining candidates. After k steps, about n / 2ᵏ elements remain; it takes roughly log₂(n) steps to get down to one element.",spaceWhy:"The algorithm only stores left, right, and mid. It does not create another array or a data structure that grows with input size.",bestCase:"O(1): the target is at the first middle position.",averageCase:"O(log n): each comparison halves the search interval.",worstCase:"O(log n): the range keeps halving until found or empty.",memoryNote:"Only a few integer variables are used, regardless of array size."
-
-  },
+  ...modularProblems,
 
   {
 
