@@ -31,7 +31,12 @@ padding: 0 6%; background: var(--panel-bg); border-bottom: 1px solid var(--borde
 .topbar-label, .subtitle, .problem-heading p, .code-note { color: var(--muted-color); font-size: 13px; }
 .theme-toggle { padding: 9px 13px; border: 1px solid var(--border-color); border-radius: 9px; background: var(--panel-bg); color: var(--text-color); font-size: 12px; font-weight: 600; white-space: nowrap; transition: background-color 0.2s, color 0.2s; }
 .theme-toggle:hover { opacity: 0.8; }
-.page { max-width: 1240px; padding: 48px 28px 64px; margin: auto; }
+.page {
+  width: 100%;
+  max-width: 1800px;
+  padding: 28px 3.5% 40px;
+  margin: 0 auto;
+}
 .intro { margin-bottom: 32px; }
 .eyebrow { color: #27754b; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
 h1 { font-size: clamp(28px, 4vw, 42px); letter-spacing: -1.7px; margin: 12px 0; }
@@ -51,7 +56,12 @@ h2 { margin: 8px 0; font-size: 25px; letter-spacing: -0.8px; }
 .target-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 12px 22px; border-radius: 12px; display: grid; gap: 5px; text-align: center; }
 .target-card span, .metric span, .complexity span { color: var(--muted-color); font-size: 11px; }
 .target-card strong { font-size: 24px; }
-.workspace { display: grid; grid-template-columns: 1.05fr 0.95fr; align-items: stretch; gap: 18px; }
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 18px;
+}
 .panel { min-width: 0; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; }
 .panel-header { min-height: 51px; display: flex; align-items: center; justify-content: space-between; padding: 0 17px; border-bottom: 1px solid #e9ece7; font-size: 12px; font-weight: 700; }
 .code-panel-header { gap: 12px; }
@@ -118,7 +128,7 @@ h2 { margin: 8px 0; font-size: 25px; letter-spacing: -0.8px; }
 .controls { display: flex; gap: 7px; padding: 18px; margin-top: 4px; }
 .controls button { font-size: 11px; padding: 10px; white-space: nowrap; }
 .secondary-button { background: var(--panel-bg); color: var(--text-color); border: 1px solid #dfe4dc; border-radius: 8px; }
-.controls .primary-button { margin-left: auto; }
+.controls .primary-button { margin-left: 0; }
 .complexity { margin-top: 20px; display: grid; grid-template-columns: 130px 140px 1fr; gap: 18px; align-items: center; padding: 18px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; }
 .complexity div { display: grid; gap: 7px; }
 .complexity strong { font: 17px "DM Mono", monospace; }
@@ -1323,32 +1333,6 @@ body, .app { background: var(--page-bg); color: var(--text-color); }
   background: #F5DAA7 !important; color: #660B05 !important; border-color: #8C1007 !important;
 }
 
-/* Stronger code weight everywhere: use bold monospace glyphs and avoid thin inherited font styles. */
-.code-line,
-.code-line code,
-.pseudo-line,
-.pseudo-line code,
-.code pre,
-.pseudocode pre,
-.solution-code,
-pre code {
-  font-weight: 750 !important;
-  -webkit-font-smoothing: auto;
-  text-rendering: optimizeLegibility;
-}
-.code-line code,
-.pseudo-line code,
-pre code {
-  font-family: ui-monospace, "Cascadia Code", "JetBrains Mono", "SFMono-Regular", Consolas, monospace !important;
-  font-variation-settings: "wght" 750;
-}
-.line-number,
-.pseudo-line .line-number {
-  font-weight: 700 !important;
-  opacity: 0.95 !important;
-}
-
-
 /* Stepwise motion language: quiet, purposeful, and respectful of reduced-motion settings. */
 .intro, .search, .problem-heading, .testcase-selector, .workspace .panel {
   will-change: opacity, transform;
@@ -1596,5 +1580,294 @@ button:not(:disabled):active {
 @media (prefers-reduced-motion: reduce) {
   .problem-filters select {
     transition: none;
+  }
+}
+
+/* =========================================================
+   Responsive workspace refinement
+   Wider, centered layout with less wasted vertical space
+   ========================================================= */
+
+.page {
+  width: min(100% - 48px, 1920px);
+  max-width: 1920px;
+  margin-inline: auto;
+  padding: 20px 0 28px;
+}
+
+.intro {
+  margin-bottom: 20px;
+}
+
+.search {
+  margin-bottom: 22px;
+}
+
+.problem-heading {
+  margin-bottom: 14px;
+}
+
+/* Balanced, centered desktop workspace */
+.workspace {
+  width: 100%;
+  max-width: none;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+  align-items: stretch;
+  gap: 16px;
+}
+
+.workspace > .panel {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Reduce excess vertical space */
+.step-content {
+  padding: 12px 16px 8px;
+}
+
+.explanation {
+  line-height: 1.5;
+  min-height: 0;
+}
+
+.section-label {
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+.visualizer-content {
+  min-height: 0;
+}
+
+.visualizer-content > .controls {
+  padding: 12px 16px;
+}
+
+/* Give the visualization room without stretching its contents */
+.solution-split {
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.42fr);
+}
+
+/* Medium screens */
+@media (max-width: 1050px) {
+  .page {
+    width: calc(100% - 32px);
+  }
+
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .solution-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Small screens */
+@media (max-width: 520px) {
+  .page {
+    width: calc(100% - 24px);
+    padding-top: 18px;
+    padding-bottom: 24px;
+  }
+
+  .workspace {
+    gap: 12px;
+  }
+}
+
+
+/* Center hash-map cards evenly within the available visualizer width */
+.visualizer-content .hash-map {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center !important;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0 auto 12px;
+  padding: 0 18px;
+}
+
+.visualizer-content .hash-map .map-entry {
+  flex: 0 0 82px;
+  min-width: 82px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* Keep the navigation buttons centered independently */
+.visualizer-content > .controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.visualizer-content .controls .primary-button {
+  margin-left: 0 !important;
+}
+
+
+.line-number {
+  width: 34px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+}
+
+.code-line code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--text-color);
+  letter-spacing: 0;
+}
+
+.code-explanation p {
+  overflow-wrap: anywhere;
+}
+
+/* Prevent long lines from breaking the layout */
+.code {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* Readable code typography across themes */
+.code-line,
+.code-line code,
+.pseudo-line,
+.pseudo-line code {
+  font-family: Consolas, "Courier New", monospace !important;
+  font-weight: 500 !important;
+  font-variation-settings: normal !important;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: none !important;
+}
+
+.code-line {
+  min-height: 32px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.code-line code {
+  font-size: 14px !important;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+.line-number {
+  width: 34px;
+  flex-shrink: 0;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+}
+
+/* Final code readability settings */
+.code-line,
+.code-line code,
+.pseudo-line,
+.pseudo-line code {
+  font-family: "DM Mono", Consolas, "Courier New", monospace !important;
+  font-weight: 400 !important;
+  font-variation-settings: normal !important;
+  text-shadow: none !important;
+}
+
+.code-line {
+  min-height: 32px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.code-line code {
+  font-size: 14px !important;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+.line-number {
+  width: 34px;
+  flex-shrink: 0;
+  font-weight: 500 !important;
+}
+
+.pseudo-line code {
+  font-size: 12px !important;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.solution-split .code-line code {
+  font-size: 13px !important;
+}
+
+/* Keep Previous, Reset, and Next together in the center */
+.visualizer-content .controls {
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.visualizer-content .controls .primary-button {
+  margin-left: 0 !important;
+}
+
+
+/* Final visualization layout fix */
+.visualizer-content {
+  min-width: 0;
+}
+
+.visualizer-content > .section-label {
+  width: 100%;
+}
+
+.visualizer-content .hash-map {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 18px;
+}
+
+.visualizer-content .hash-map .map-entry {
+  flex: 0 1 120px;
+  min-width: 82px;
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.visualizer-content [aria-label="Linked list visualization"],
+.visualizer-content [aria-label="tree visualization"],
+.visualizer-content [aria-label="graph visualization"] {
+  margin-inline: auto;
+}
+
+@media (max-width: 520px) {
+  .visualizer-content .hash-map {
+    padding-inline: 12px;
+    gap: 8px;
+  }
+
+  .visualizer-content .hash-map .map-entry {
+    flex-basis: 100px;
   }
 }

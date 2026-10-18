@@ -42,7 +42,9 @@ export function adaptStringProblem<
         Array.from(state.text).map((character) =>
           character.charCodeAt(0),
         ),
+
       getCurrentIndex: (state) => state.currentIndex,
+
       getVariables: (state) => [
         ...(state.character !== null
           ? [{ label: "Character", value: state.character }]
@@ -54,17 +56,22 @@ export function adaptStringProblem<
             }]
           : []),
       ],
+
       getMemory: (state) =>
         state.stack.map((character, index) => ({
           label: `Stack ${index + 1}`,
           value: character,
         })),
+
+      getStack: (state) => [...state.stack],
+
       getResult: (state) =>
         state.result === null
           ? null
           : state.result
             ? "Valid bracket sequence"
             : "Invalid bracket sequence",
+
       getResultStatus: (state) =>
         state.result === null
           ? "info"

@@ -30,11 +30,11 @@ const validCases = [
 ];
 
 describe("UI-facing problem registry", () => {
-  it("registers all five unique problems", () => {
-    expect(modularProblems).toHaveLength(5);
-    expect(new Set(modularProblems.map((problem) => problem.id)).size)
-      .toBe(5);
-  });
+  it("registers all six unique problems", () => {
+  expect(modularProblems).toHaveLength(6);
+  expect(new Set(modularProblems.map((problem) => problem.id)).size)
+    .toBe(6);
+});
 
   it.each(validCases)(
     "adapts problem $id into usable visualization steps",

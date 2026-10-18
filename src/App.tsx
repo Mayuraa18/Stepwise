@@ -7,6 +7,7 @@ import { modularProblems } from "./problems/registry.ts";
 import rawCatalog from "../data/catalog.json";
 import { loadCatalog } from "./catalog/load-catalog.ts";
 import { integrateCatalog } from "./catalog/integrate-catalog.ts";
+import VisualizationRenderer from "./components/VisualizationRenderer.tsx";
 
 const catalog = loadCatalog(rawCatalog);
 const problems: Problem[] = integrateCatalog(catalog, modularProblems);
@@ -514,7 +515,12 @@ export default function App() {
 
               <div className="section-label">{problem.visualization.stateLabel}</div>
 
-              <div className="hash-map">{step.memory.length?step.memory.map((m,i)=><span className="map-entry" key={`${m.label}-${i}`}>{m.label} → {m.value}</span>):<span className="empty-state">{problem.visualization.emptyStateLabel}</span>}</div>
+              <VisualizationRenderer
+              kind={problem.visualization.kind}
+              data={step.visualization}
+              fallbackItems={step.memory}
+              emptyStateLabel={problem.visualization.emptyStateLabel}
+              />
 
 {step.result && (
   <div
@@ -576,7 +582,14 @@ export default function App() {
         <div className="complexity-summary"><div><span>Time complexity</span><strong>{problem.time}</strong><p>{problem.timeWhy}</p></div><div><span>Space complexity</span><strong>{problem.space}</strong><p>{problem.spaceWhy}</p></div></div>
 
         {complexityOpen && <div className="complexity-details" id="complexity-learning-content"><div className="complexity-learning-intro"><strong>Let’s break it down</strong><p>Big-O describes how an algorithm’s work or extra memory grows as the input gets larger. The examples and chart below are learning aids, not measured runtime.</p></div><article><h3>Time growth</h3><p>{problem.bestCase}</p><p>{problem.averageCase}</p><p>{problem.worstCase}</p><div className="growth-visual" style={{ gap: 14 }}>
-              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <div style={{
+  display: "flex",
+  flexWrap: "wrap",
+  justifyContent: "center",
+  alignItems: "center",
+  gap: 8,
+  width: "100%",
+}}>
                 <div>
                   <strong style={{ display: "block", fontSize: 12, marginBottom: 4 }}>Compare Big-O growth</strong>
                   <span style={{ color: "var(--muted-color)", fontSize: 10 }}>Choose an input size to inspect estimated operation counts.</span>

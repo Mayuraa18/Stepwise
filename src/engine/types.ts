@@ -6,11 +6,36 @@ export type Difficulty = "Easy" | "Medium" | "Hard";
 
 export type ResultStatus = "success" | "failure" | "info";
 
+
+export type VisualizationKind =
+  | "array"
+  | "string"
+  | "stack"
+  | "hash-map"
+  | "linked-list"
+  | "tree"
+  | "graph";
+
 export type VisualizationConfig = {
-  kind: "array" | "string";
+  kind: VisualizationKind;
   inputLabel: string;
   stateLabel: string;
   emptyStateLabel: string;
+};
+
+export type VisualizationItem = {
+  id: string;
+  label: string;
+  value: string;
+  active?: boolean;
+};
+
+export type VisualizationData = {
+  items?: VisualizationItem[];
+  stack?: VisualizationItem[];
+  entries?: VisualizationItem[];
+  pointers?: Record<string, string | number | null>;
+  edges?: Array<[string, string]>;
 };
 
 export type VisualStep = {
@@ -25,8 +50,8 @@ export type VisualStep = {
   result: string | null;
   resultStatus?: ResultStatus;
   activeRange?: [number, number];
+  visualization?: VisualizationData;
 };
-
 
 export type ParsedProblemInput = {
   array: number[];
