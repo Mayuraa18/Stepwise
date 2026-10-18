@@ -6,6 +6,13 @@ export type Difficulty = "Easy" | "Medium" | "Hard";
 
 export type ResultStatus = "success" | "failure" | "info";
 
+export type VisualizationConfig = {
+  kind: "array" | "string";
+  inputLabel: string;
+  stateLabel: string;
+  emptyStateLabel: string;
+};
+
 export type VisualStep = {
   title: string;
   explanation: string;
@@ -32,6 +39,7 @@ export type Problem = {
   title: string;
   difficulty: Difficulty;
   category: string;
+  visualization: VisualizationConfig;
   description: string;
   inputHint: string;
   defaultInput: string;

@@ -504,17 +504,17 @@ export default function App() {
 
             {step?<><div className="step-content"><p className="eyebrow">CURRENT STEP</p><h3>{step.title}</h3><p className="explanation">{step.explanation}</p></div>
 
-              <div className="section-label">{problem.id==="20"?"Bracket input (character codes shown)": "Input array"}</div>
+              <div className="section-label">{problem.visualization.inputLabel}</div>
 
-              {problem.id==="20" ? <div className="bracket-string">{input.trim().split("").map((c,i)=><span key={i} className={step.currentIndex===i?"selected":""}>{c}</span>)}</div> :
+              {problem.visualization.kind === "string" ? <div className="bracket-string">{input.trim().split("").map((c,i)=><span key={i} className={step.currentIndex===i?"selected":""}>{c}</span>)}</div> :
 
               <div className="array" style={{gridTemplateColumns:`repeat(${Math.min(Math.max(step.array.length,1),8)}, minmax(0,1fr))`}}>{step.array.map((num,i)=><div className="array-item" key={i}><div className={`array-value ${step.currentIndex===i?"selected":""} ${step.result&&step.result.includes(`index ${i}`)?"matched":""} ${step.activeRange&&i>=step.activeRange[0]&&i<=step.activeRange[1]?"in-range":""}`}>{num}</div><span className="array-index">index {i}</span></div>)}</div>}
 
               <div className="metrics">{step.variables.map(v=><div className="metric" key={v.label}><span>{v.label}</span><strong>{v.value}</strong></div>)}</div>
 
-              <div className="section-label">{problem.id==="20"?"Stack · last in, first out":problem.id==="1"?"Hash map · value → index":"Algorithm state"}</div>
+              <div className="section-label">{problem.visualization.stateLabel}</div>
 
-              <div className="hash-map">{step.memory.length?step.memory.map((m,i)=><span className="map-entry" key={`${m.label}-${i}`}>{m.label} → {m.value}</span>):<span className="empty-state">{problem.id==="1"?"Empty map":problem.id==="20"?"Stack is empty":"No extra data structure"}</span>}</div>
+              <div className="hash-map">{step.memory.length?step.memory.map((m,i)=><span className="map-entry" key={`${m.label}-${i}`}>{m.label} → {m.value}</span>):<span className="empty-state">{problem.visualization.emptyStateLabel}</span>}</div>
 
 {step.result && (
   <div

@@ -1,9 +1,8 @@
-
 import type {
   Problem,
   ProblemDefinition,
-  VisualStep,
 } from "../engine/types.ts";
+import { createVisualTrace, formatTraceValue } from "../engine/trace.ts";
 
 type ArrayInput = {
   prices?: number[];
@@ -39,67 +38,34 @@ export function adaptArrayProblem<
     const input = definition.parseInput(rawInput);
 
     return {
-      array: getArray(input),
+      array: [...getArray(input)],
       text: rawInput,
     };
   }
 
-  function run(rawInput: string): VisualStep[] {
+  function run(rawInput: string) {
     const input = definition.parseInput(rawInput);
     const inputArray = getArray(input);
 
-    return definition.createSteps(input).map(({ state, ...step }) => {
-      const variables: { label: string; value: string }[] = [];
-      const memory: { label: string; value: string }[] = [];
-
-      for (const [key, value] of Object.entries(state)) {
-        if (
-          key === "prices" ||
-          key === "nums" ||
-          key === "result"
-        ) {
-          continue;
-        }
-
-        if (
-          typeof value === "string" ||
-          typeof value === "number" ||
-          typeof value === "boolean" ||
-          value === null
-        ) {
-          variables.push({
-            label: key,
-            value: value === null ? "null" : String(value),
-          });
-        }
-      }
-
-      const result = state.result;
-
-      return {
-        title: step.title,
-        explanation: step.explanation,
-        line: step.codeLine,
-        pseudocodeLine: step.pseudocodeLine,
-        currentIndex: state.currentIndex,
-        array: [...inputArray],
-        variables,
-        memory,
-                result:
-          result == null
-            ? null
-            : typeof result === "string"
-              ? result
-              : JSON.stringify(result),
-        resultStatus:
-          result == null
-            ? "info"
-            : typeof result === "boolean"
-              ? result
-                ? "success"
-                : "failure"
-              : "success",
-      };
+    return createVisualTrace(definition.createSteps(input), {
+      getArray: () => inputArray,
+      getCurrentIndex: (state) => state.currentIndex,
+      getVariables: (state) =>
+        Object.entries(state)
+          .filter(
+            ([key, value]) =>
+              !["prices", "nums", "result"].includes(key) &&
+              (typeof value === "string" ||
+                typeof value === "number" ||
+                typeof value === "boolean" ||
+                value === null),
+          )
+          .map(([label, value]) => ({
+            label,
+            value: formatTraceValue(value),
+          })),
+      getMemory: () => [],
+      getResult: (state) => state.result,
     });
   }
 
@@ -108,6 +74,12 @@ export function adaptArrayProblem<
     title: definition.title,
     difficulty: definition.difficulty,
     category: definition.tags.join(", "),
+    visualization: {
+      kind: "array",
+      inputLabel: "Input array",
+      stateLabel: "Algorithm state",
+      emptyStateLabel: "No extra data structure",
+    },
     description: definition.description,
     inputHint: definition.inputHint,
     defaultInput: definition.defaultInput,

@@ -1,10 +1,9 @@
-
 import type {
   Problem,
   ProblemDefinition,
   ParsedProblemInput,
-  VisualStep,
 } from "../engine/types.ts";
+import { createVisualTrace, formatTraceValue } from "../engine/trace.ts";
 
 type ArrayTargetInput = {
   nums: number[];
@@ -27,12 +26,12 @@ function normalizeInput(rawInput: string): string {
   }
 
   const targetMatch = input.match(
-    /target\s*:\s*(-?\d+(?:\.\d+)?)/i
+    /target\s*:\s*(-?\d+(?:\.\d+)?)/i,
   );
 
   if (!targetMatch) {
     throw new Error(
-      "Include a target, e.g. 2, 7, 11, 15; target: 9."
+      "Include a target, e.g. 2, 7, 11, 15; target: 9.",
     );
   }
 
@@ -50,7 +49,7 @@ function normalizeInput(rawInput: string): string {
     nums.some((value) => !Number.isFinite(value))
   ) {
     throw new Error(
-      "Enter valid numbers separated by commas or spaces."
+      "Enter valid numbers separated by commas or spaces.",
     );
   }
 
@@ -65,7 +64,7 @@ export function adaptProblem<
   Output,
   State extends AdaptableState,
 >(
-  definition: ProblemDefinition<Input, Output, State>
+  definition: ProblemDefinition<Input, Output, State>,
 ): Problem {
   function parse(rawInput: string): ParsedProblemInput {
     const input = definition.parseInput(normalizeInput(rawInput));
@@ -77,71 +76,39 @@ export function adaptProblem<
     };
   }
 
-  function run(rawInput: string): VisualStep[] {
+  function run(rawInput: string) {
     const input = definition.parseInput(normalizeInput(rawInput));
 
-    return definition.createSteps(input).map((executionStep) => {
-      const state = executionStep.state;
-      const variables: { label: string; value: string }[] = [];
-      const memory: { label: string; value: string }[] = [];
-
-      for (const [key, value] of Object.entries(state)) {
-        if (
-          key === "nums" ||
-          key === "result" ||
-          key === "seen"
-        ) {
-          continue;
-        }
-
-        if (
-          typeof value === "string" ||
-          typeof value === "number" ||
-          typeof value === "boolean" ||
-          value === null
-        ) {
-          variables.push({
-            label: key,
-            value: value === null ? "null" : String(value),
-          });
-        }
-      }
-
-      if (
-        typeof state.seen === "object" &&
-        state.seen !== null
-      ) {
-        for (const [key, value] of Object.entries(state.seen)) {
-          memory.push({
-            label: key,
-            value: String(value),
-          });
-        }
-      }
-
-      const result = state.result;
-
-      return {
-        title: executionStep.title,
-        explanation: executionStep.explanation,
-        line: executionStep.codeLine,
-        pseudocodeLine: executionStep.pseudocodeLine,
-        currentIndex: state.currentIndex,
-        array: [...state.nums],
-        variables,
-        memory,
-        result:
-          result === null || result === undefined
-            ? null
-            : typeof result === "string"
-              ? result
-              : JSON.stringify(result),
-        ...(Array.isArray(state.nums) &&
+    return createVisualTrace(definition.createSteps(input), {
+      getArray: (state) => state.nums,
+      getCurrentIndex: (state) => state.currentIndex,
+      getVariables: (state) =>
+        Object.entries(state)
+          .filter(
+            ([key, value]) =>
+              !["nums", "result", "seen"].includes(key) &&
+              (typeof value === "string" ||
+                typeof value === "number" ||
+                typeof value === "boolean" ||
+                value === null),
+          )
+          .map(([label, value]) => ({
+            label,
+            value: formatTraceValue(value),
+          })),
+      getMemory: (state) =>
+        typeof state.seen === "object" && state.seen !== null
+          ? Object.entries(state.seen).map(([label, value]) => ({
+              label,
+              value: formatTraceValue(value),
+            }))
+          : [],
+      getResult: (state) => state.result,
+      getActiveRange: (state) =>
         typeof state.left === "number" &&
         typeof state.right === "number"
-          ? { activeRange: [state.left, state.right] as [number, number] }
-          : {}),
-      };
+          ? [state.left, state.right]
+          : undefined,
     });
   }
 
@@ -150,6 +117,18 @@ export function adaptProblem<
     title: definition.title,
     difficulty: definition.difficulty,
     category: definition.tags.join(", "),
+    visualization: {
+      kind: "array",
+      inputLabel: "Input array",
+      stateLabel:
+        definition.id === "two-sum"
+          ? "Hash map · value → index"
+          : "Algorithm state",
+      emptyStateLabel:
+        definition.id === "two-sum"
+          ? "Empty map"
+          : "No extra data structure",
+    },
     description: definition.description,
     inputHint: definition.inputHint,
     defaultInput: definition.defaultInput,
