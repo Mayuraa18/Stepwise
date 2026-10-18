@@ -3,6 +3,7 @@ import type { Language, VisualStep, Problem } from "./engine/types";
 import "./App.css";
 import { twoSumProblem } from "./problems/two-sum.ts";
 import { adaptProblem } from "./problems/adapt-problem.ts";
+import { binarySearchProblem } from "./problems/binary-search.ts";
 
 
 function step(
@@ -38,6 +39,7 @@ function parseNumbers(input: string): number[] {
 const problems: Problem[] = [
   
   adaptProblem(twoSumProblem),
+  adaptProblem(binarySearchProblem),
 
   {
 

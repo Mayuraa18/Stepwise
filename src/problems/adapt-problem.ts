@@ -6,25 +6,22 @@ import type {
   VisualStep,
 } from "../engine/types.ts";
 
-type TwoSumInput = {
+type ArrayTargetInput = {
   nums: number[];
   target: number;
 };
 
-type TwoSumStateShape = {
+type AdaptableState = {
   nums: number[];
   target: number;
   currentIndex: number | null;
-  currentValue: number | null;
-  complement: number | null;
-  seen: Record<string, number>;
-  result: number[] | null;
+  result: unknown;
+  [key: string]: unknown;
 };
 
 function normalizeInput(rawInput: string): string {
   const input = rawInput.trim();
 
-  // Also accept the JSON format used by the new problem module.
   if (input.startsWith("{")) {
     return input;
   }
@@ -64,10 +61,11 @@ function normalizeInput(rawInput: string): string {
 }
 
 export function adaptProblem<
-  Input extends TwoSumInput,
-  State extends TwoSumStateShape,
+  Input extends ArrayTargetInput,
+  Output,
+  State extends AdaptableState,
 >(
-  definition: ProblemDefinition<Input, number[], State>
+  definition: ProblemDefinition<Input, Output, State>
 ): Problem {
   function parse(rawInput: string): ParsedProblemInput {
     const input = definition.parseInput(normalizeInput(rawInput));
@@ -84,31 +82,44 @@ export function adaptProblem<
 
     return definition.createSteps(input).map((executionStep) => {
       const state = executionStep.state;
+      const variables: { label: string; value: string }[] = [];
+      const memory: { label: string; value: string }[] = [];
 
-      const variables: { label: string; value: string }[] = [
-        { label: "Target", value: String(state.target) },
-      ];
+      for (const [key, value] of Object.entries(state)) {
+        if (
+          key === "nums" ||
+          key === "result" ||
+          key === "seen"
+        ) {
+          continue;
+        }
 
-      if (state.currentIndex !== null) {
-        variables.push({
-          label: "Current index",
-          value: String(state.currentIndex),
-        });
+        if (
+          typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean" ||
+          value === null
+        ) {
+          variables.push({
+            label: key,
+            value: value === null ? "null" : String(value),
+          });
+        }
       }
 
-      if (state.currentValue !== null) {
-        variables.push({
-          label: "Current value",
-          value: String(state.currentValue),
-        });
+      if (
+        typeof state.seen === "object" &&
+        state.seen !== null
+      ) {
+        for (const [key, value] of Object.entries(state.seen)) {
+          memory.push({
+            label: key,
+            value: String(value),
+          });
+        }
       }
 
-      if (state.complement !== null) {
-        variables.push({
-          label: "Complement",
-          value: String(state.complement),
-        });
-      }
+      const result = state.result;
 
       return {
         title: executionStep.title,
@@ -118,14 +129,18 @@ export function adaptProblem<
         currentIndex: state.currentIndex,
         array: [...state.nums],
         variables,
-        memory: Object.entries(state.seen).map(([number, index]) => ({
-          label: number,
-          value: String(index),
-        })),
+        memory,
         result:
-          state.result === null
+          result === null || result === undefined
             ? null
-            : JSON.stringify(state.result),
+            : typeof result === "string"
+              ? result
+              : JSON.stringify(result),
+        ...(Array.isArray(state.nums) &&
+        typeof state.left === "number" &&
+        typeof state.right === "number"
+          ? { activeRange: [state.left, state.right] as [number, number] }
+          : {}),
       };
     });
   }
@@ -136,9 +151,12 @@ export function adaptProblem<
     difficulty: definition.difficulty,
     category: definition.tags.join(", "),
     description: definition.description,
-    inputHint:
-      "Array values, then target (example: 2, 7, 11, 15; target: 9)",
-    defaultInput: "2, 7, 11, 15; target: 9",
+    inputHint: definition.leetcodeNumber === 704
+      ? "Sorted array, then target (example: -1, 0, 3, 5, 9, 12; target: 9)"
+      : "Array values, then target (example: 2, 7, 11, 15; target: 9)",
+    defaultInput: definition.leetcodeNumber === 704
+      ? "-1, 0, 3, 5, 9, 12; target: 9"
+      : "2, 7, 11, 15; target: 9",
     languages: definition.solutions,
     pseudocode: definition.pseudocode,
     parse,
@@ -147,9 +165,11 @@ export function adaptProblem<
     space: definition.complexity.space,
     timeWhy: definition.complexity.timeExplanation,
     spaceWhy: definition.complexity.spaceExplanation,
-    bestCase: "O(1) when a matching pair is found early.",
+    bestCase: definition.leetcodeNumber === 704
+      ? "O(1) when the target is at the middle index."
+      : "O(n) in the worst case for a hash-map search.",
     averageCase: definition.complexity.time,
-    worstCase: "O(n) when the array must be scanned.",
+    worstCase: definition.complexity.time,
     memoryNote: definition.complexity.spaceExplanation,
   };
 }
