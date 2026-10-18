@@ -640,3 +640,841 @@ transform-origin: top left;
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+/* Optional complexity guide: keep the overview compact until the user asks to learn more. */
+.complexity-heading-hint {
+  margin: 7px 0 0;
+  color: var(--muted-color);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.complexity-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 10px 13px;
+  border: 1px solid #398457;
+  border-radius: 9px;
+  background: var(--active-bg);
+  color: #246b43;
+  font-size: 11px;
+  font-weight: 700;
+  transition: background-color 0.18s, border-color 0.18s, transform 0.18s;
+}
+.complexity-toggle:hover {
+  border-color: #246b43;
+  background: #dff0e3;
+}
+.complexity-toggle > span {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  background: rgb(57 132 87 / 12%);
+  font-size: 15px;
+  line-height: 1;
+}
+.complexity-learning-intro {
+  grid-column: 1 / -1;
+  padding: 14px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--soft-bg);
+}
+.complexity-learning-intro strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+.complexity-learning-intro p {
+  margin: 0;
+  max-width: 760px;
+  color: var(--muted-color);
+  font-size: 11px;
+  line-height: 1.7;
+}
+:root[data-theme="dark"] .complexity-toggle {
+  background: #294a32;
+  border-color: #67cf87;
+  color: #d9fbe1;
+}
+:root[data-theme="dark"] .complexity-toggle:hover {
+  background: #315a3c;
+}
+:root[data-theme="dark"] .complexity-toggle > span {
+  background: rgb(103 207 135 / 15%);
+}
+@media (max-width: 700px) {
+  .complexity-lab-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .complexity-toggle {
+    align-self: flex-start;
+    max-width: 100%;
+  }
+}
+
+
+/* Dark theme palette inspired by the requested navy / sea colors */
+:root[data-theme="dark"] {
+  --page-bg: #0c2b4e;
+  --panel-bg: #1a3d64;
+  --text-color: #f4f4f4;
+  --muted-color: #c2cfda;
+  --border-color: #315575;
+  --soft-bg: #173858;
+  --code-bg: #102f50;
+  --active-bg: #1d546c;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .brand-mark,
+:root[data-theme="dark"] .search button,
+:root[data-theme="dark"] .primary-button {
+  background: #1d546c;
+  border-color: #1d546c;
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .search button:hover,
+:root[data-theme="dark"] .primary-button:hover {
+  background: #24677f;
+  border-color: #24677f;
+}
+:root[data-theme="dark"] .eyebrow,
+:root[data-theme="dark"] .text-button,
+:root[data-theme="dark"] .quick-problem.active {
+  color: #c8e5f0;
+}
+:root[data-theme="dark"] .difficulty {
+  background: #1d546c;
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .active-line,
+:root[data-theme="dark"] .pseudo-active {
+  background: #1d546c;
+  border-left-color: #8ac9d8;
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .array-value.selected,
+:root[data-theme="dark"] .array-value.matched,
+:root[data-theme="dark"] .bracket-string span.selected {
+  background: #1d546c;
+  border-color: #8ac9d8;
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .map-entry {
+  background: #1d546c;
+  border-color: #3e758b;
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .result {
+  background: #1d546c;
+  border-color: #3e758b;
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .result strong,
+:root[data-theme="dark"] .result p {
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .quick-problem:not(.active) {
+  background: #1d546c;
+  border-color: #1d546c;
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .quick-problem:not(.active) > span,
+:root[data-theme="dark"] .quick-problem:not(.active) > small {
+  color: #d6e7ef;
+}
+:root[data-theme="dark"] .quick-problem.active {
+  background: #1d546c;
+  border-color: #8ac9d8;
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .quick-problem.active > span,
+:root[data-theme="dark"] .quick-problem.active > small {
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .complexity-toggle {
+  background: #1d546c;
+  border-color: #5a91a5;
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .complexity-toggle:hover {
+  background: #24677f;
+}
+:root[data-theme="dark"] .complexity-toggle > span {
+  background: rgb(244 244 244 / 12%);
+}
+:root[data-theme="dark"] .growth-visual,
+:root[data-theme="dark"] .complexity-learning-intro {
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .memory-cell.used {
+  background: #1d546c;
+  border-color: #5a91a5;
+  color: #f4f4f4;
+}
+:root[data-theme="dark"] .zoom-controls button:hover:not(:disabled),
+:root[data-theme="dark"] .about-dev-contact a:hover,
+:root[data-theme="dark"] .about-dev-toggle:hover {
+  border-color: #8ac9d8;
+  color: #d9f1f7;
+}
+
+
+/* Six complete palettes — theme colors are applied through CSS variables from App.tsx. */
+:root {
+  --accent-color: #1D546C;
+  --accent-strong: #1A3D64;
+  --accent-soft: #1D546C;
+}
+body, .app, .topbar, .search, .panel, .testcase-selector, .complexity-lab,
+.testcase-button, .metric, .complexity-summary > div, .complexity-details article,
+.code-explanation, .language-picker select, .theme-toggle, .secondary-button,
+.custom-input textarea, .quick-problem, .about-dev-dialog, .about-dev-details div,
+.about-dev-contact a, .theme-option {
+  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease;
+}
+.topbar, .search, .panel, .testcase-selector, .complexity-lab, .about-dev-dialog {
+  background: var(--panel-bg);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+body, .app { background: var(--page-bg); color: var(--text-color); }
+.brand-mark, .primary-button, .search-row button, .quick-problem:not(.active) {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+.primary-button, .search-row button, .quick-problem:not(.active) { color: var(--text-color); }
+.quick-problem.active, .active-line, .pseudo-active, .array-value.selected,
+.array-value.matched, .memory-cell.used, .bracket-string span.selected,
+.testcase-button.testcase-active {
+  background: var(--active-bg);
+  border-color: var(--accent-color);
+}
+.active-line, .pseudo-active { border-left-color: var(--accent-color); }
+.code, .pseudocode, .solution-split .code { background: var(--code-bg); }
+.code-line code, .pseudo-line code { color: var(--text-color); }
+.map-entry { background: var(--soft-bg); border-color: var(--border-color); color: var(--text-color); }
+.explanation-pulse, .growth-bar.linear { background: var(--accent-color); }
+.complexity-summary > div, .complexity-details article, .metric, .theme-toggle,
+.language-picker select, .custom-input textarea, .secondary-button, .testcase-button,
+.code-explanation, .about-dev-details div, .about-dev-contact a {
+  background: var(--soft-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+:root[data-theme="meadow"] .text-button,
+:root[data-theme="sand"] .text-button { color: var(--accent-strong); }
+:root[data-theme="meadow"] .quick-problem:not(.active),
+:root[data-theme="sand"] .quick-problem:not(.active) { color: #fff; }
+:root[data-theme="meadow"] .primary-button,
+:root[data-theme="sand"] .primary-button,
+:root[data-theme="meadow"] .search-row button,
+:root[data-theme="sand"] .search-row button { color: #fff; }
+:root[data-theme="navy"] .difficulty,
+:root[data-theme="berry"] .difficulty,
+:root[data-theme="coffee"] .difficulty,
+:root[data-theme="ember"] .difficulty { background: var(--accent-color); color: var(--text-color); }
+:root[data-theme="meadow"] .difficulty,
+:root[data-theme="sand"] .difficulty { background: var(--accent-color); color: #202520; }
+
+/* Theme selector and animated palette preview */
+.theme-picker-wrap { position: relative; }
+.theme-toggle { display: inline-flex; align-items: center; gap: 9px; }
+.theme-current-dots { display: inline-flex; gap: 2px; }
+.theme-current-dots i { display: block; width: 9px; height: 17px; border-radius: 3px; }
+.theme-menu {
+  position: absolute; z-index: 1100; top: calc(100% + 10px); right: 0;
+  width: min(340px, calc(100vw - 28px)); padding: 14px;
+  border: 1px solid var(--border-color); border-radius: 14px;
+  background: var(--panel-bg); color: var(--text-color);
+  box-shadow: 0 18px 55px rgb(0 0 0 / 20%);
+  animation: theme-menu-enter 180ms ease-out;
+}
+.theme-menu-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.theme-menu-heading div { display: grid; gap: 4px; }
+.theme-menu-heading strong { font-size: 13px; }
+.theme-menu-heading span { color: var(--muted-color); font-size: 10px; }
+.theme-menu-close { width: 27px; height: 27px; border: 1px solid var(--border-color); border-radius: 7px; background: var(--soft-bg); color: var(--text-color); font-size: 19px; line-height: 1; }
+.theme-options { display: grid; gap: 6px; }
+.theme-option { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px; text-align: left; border: 1px solid var(--border-color); border-radius: 9px; background: var(--soft-bg); color: var(--text-color); }
+.theme-option:hover, .theme-option.selected { border-color: var(--accent-color); }
+.theme-option.selected { box-shadow: inset 0 0 0 1px var(--accent-color); }
+.theme-option-swatches { display: flex; flex: 0 0 76px; height: 29px; overflow: hidden; border-radius: 6px; }
+.theme-option-swatches i { flex: 1; }
+.theme-option-copy { display: grid; gap: 3px; flex: 1; }
+.theme-option-copy strong { font-size: 11px; }
+.theme-option-copy small { color: var(--muted-color); font-size: 9px; }
+.theme-option-check { color: var(--accent-color); font-size: 14px; font-weight: 800; }
+@keyframes theme-menu-enter { from { opacity: 0; transform: translateY(-5px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (max-width: 520px) {
+  .theme-menu { right: -6px; }
+  .theme-toggle { gap: 6px; padding: 8px 9px; }
+}
+
+
+/* Palette-specific contrast refinements requested after visual testing. */
+/* Berry Wine: cream canvas and panels, wine-colored typography. */
+:root[data-theme="berry"] .topbar,
+:root[data-theme="berry"] .search,
+:root[data-theme="berry"] .testcase-selector,
+:root[data-theme="berry"] .panel,
+:root[data-theme="berry"] .complexity-lab,
+:root[data-theme="berry"] .complexity-summary > div,
+:root[data-theme="berry"] .complexity-details article,
+:root[data-theme="berry"] .about-dev-dialog {
+  background: #F5DAA7;
+  color: #662222;
+  border-color: #A3485A;
+}
+:root[data-theme="berry"] .theme-option,
+:root[data-theme="berry"] .theme-menu { background: #F5DAA7; color: #662222; border-color: #A3485A; }
+:root[data-theme="berry"] .theme-option-copy small,
+:root[data-theme="berry"] .theme-menu-heading span,
+:root[data-theme="berry"] .subtitle,
+:root[data-theme="berry"] .problem-heading p,
+:root[data-theme="berry"] .complexity-summary p,
+:root[data-theme="berry"] .complexity-details p,
+:root[data-theme="berry"] .code-note,
+:root[data-theme="berry"] .explanation { color: #842A3B; }
+:root[data-theme="berry"] .primary-button,
+:root[data-theme="berry"] .search-row button,
+:root[data-theme="berry"] .brand-mark,
+:root[data-theme="berry"] .quick-problem:not(.active) {
+  background: #842A3B; border-color: #842A3B; color: #F5DAA7;
+}
+:root[data-theme="berry"] .code,
+:root[data-theme="berry"] .pseudocode,
+:root[data-theme="berry"] .solution-split .code,
+:root[data-theme="berry"] .custom-input textarea,
+:root[data-theme="berry"] .code-explanation,
+:root[data-theme="berry"] .metric,
+:root[data-theme="berry"] .testcase-button {
+  background: #FBE8C8; color: #662222; border-color: #A3485A;
+}
+:root[data-theme="berry"] .code-line code,
+:root[data-theme="berry"] .pseudo-line code,
+:root[data-theme="berry"] .code-explanation p { color: #662222; }
+:root[data-theme="berry"] .active-line,
+:root[data-theme="berry"] .pseudo-active,
+:root[data-theme="berry"] .testcase-button.testcase-active { background: #F0C98A; border-color: #A3485A; color: #662222; }
+:root[data-theme="berry"] .difficulty,
+:root[data-theme="berry"] .category-pill { background: #A3485A; color: #FFF1D7; }
+
+/* Dark Coffee: keep the dark palette but use its cream color for readable code and text. */
+:root[data-theme="coffee"] .code-line code,
+:root[data-theme="coffee"] .pseudo-line code,
+:root[data-theme="coffee"] .code-explanation p,
+:root[data-theme="coffee"] .code-explanation-title strong,
+:root[data-theme="coffee"] .complexity-details h3,
+:root[data-theme="coffee"] .complexity-lab-heading h2,
+:root[data-theme="coffee"] .step-content h3,
+:root[data-theme="coffee"] .panel-header,
+:root[data-theme="coffee"] .testcase-heading strong,
+:root[data-theme="coffee"] .custom-input label { color: #E1DCC9; }
+:root[data-theme="coffee"] .code,
+:root[data-theme="coffee"] .pseudocode,
+:root[data-theme="coffee"] .solution-split .code { background: #1F150C; }
+:root[data-theme="coffee"] .active-line,
+:root[data-theme="coffee"] .pseudo-active { background: #412D15; border-left-color: #E1DCC9; }
+:root[data-theme="coffee"] .quick-problem:not(.active),
+:root[data-theme="coffee"] .primary-button,
+:root[data-theme="coffee"] .search-row button { color: #E1DCC9; }
+
+/* Ember Red: dark red page, cream surfaces, deep-red readable text. */
+:root[data-theme="ember"] .topbar,
+:root[data-theme="ember"] .search,
+:root[data-theme="ember"] .testcase-selector,
+:root[data-theme="ember"] .panel,
+:root[data-theme="ember"] .complexity-lab,
+:root[data-theme="ember"] .complexity-summary > div,
+:root[data-theme="ember"] .complexity-details article,
+:root[data-theme="ember"] .about-dev-dialog {
+  background: #FFF0C4; color: #660B05; border-color: #8C1007;
+}
+:root[data-theme="ember"] .theme-menu,
+:root[data-theme="ember"] .theme-option { background: #FFF0C4; color: #660B05; border-color: #8C1007; }
+:root[data-theme="ember"] .code,
+:root[data-theme="ember"] .pseudocode,
+:root[data-theme="ember"] .solution-split .code,
+:root[data-theme="ember"] .custom-input textarea,
+:root[data-theme="ember"] .code-explanation,
+:root[data-theme="ember"] .metric,
+:root[data-theme="ember"] .testcase-button,
+:root[data-theme="ember"] .complexity-summary > div,
+:root[data-theme="ember"] .complexity-details article { background: #FFF5D8; color: #660B05; border-color: #8C1007; }
+:root[data-theme="ember"] .code-line code,
+:root[data-theme="ember"] .pseudo-line code,
+:root[data-theme="ember"] .code-explanation p,
+:root[data-theme="ember"] .subtitle,
+:root[data-theme="ember"] .problem-heading p,
+:root[data-theme="ember"] .complexity-summary p,
+:root[data-theme="ember"] .complexity-details p,
+:root[data-theme="ember"] .explanation { color: #660B05; }
+:root[data-theme="ember"] .primary-button,
+:root[data-theme="ember"] .search-row button,
+:root[data-theme="ember"] .brand-mark,
+:root[data-theme="ember"] .quick-problem:not(.active) { background: #660B05; border-color: #660B05; color: #FFF0C4; }
+:root[data-theme="ember"] .active-line,
+:root[data-theme="ember"] .pseudo-active,
+:root[data-theme="ember"] .testcase-button.testcase-active { background: #FFE7A0; border-color: #8C1007; color: #660B05; }
+:root[data-theme="ember"] .difficulty,
+:root[data-theme="ember"] .category-pill { background: #8C1007; color: #FFF0C4; }
+
+/* Soft Meadow and Warm Sand: strong outlines and dark text on every light surface. */
+:root[data-theme="meadow"] .search,
+:root[data-theme="meadow"] .testcase-selector,
+:root[data-theme="meadow"] .panel,
+:root[data-theme="meadow"] .complexity-lab,
+:root[data-theme="meadow"] .complexity-summary > div,
+:root[data-theme="meadow"] .complexity-details article,
+:root[data-theme="meadow"] .testcase-button,
+:root[data-theme="meadow"] .metric,
+:root[data-theme="meadow"] .code-explanation,
+:root[data-theme="meadow"] .custom-input textarea,
+:root[data-theme="meadow"] .language-picker select,
+:root[data-theme="meadow"] .about-dev-dialog,
+:root[data-theme="meadow"] .about-dev-details div {
+  border: 1px solid #93BFC7;
+  color: #173B2A;
+}
+:root[data-theme="meadow"] .code-line code,
+:root[data-theme="meadow"] .pseudo-line code,
+:root[data-theme="meadow"] .code-explanation p,
+:root[data-theme="meadow"] .subtitle,
+:root[data-theme="meadow"] .problem-heading p,
+:root[data-theme="meadow"] .complexity-summary p,
+:root[data-theme="meadow"] .complexity-details p,
+:root[data-theme="meadow"] .explanation { color: #173B2A; }
+:root[data-theme="meadow"] .quick-problem:not(.active),
+:root[data-theme="meadow"] .primary-button,
+:root[data-theme="meadow"] .search-row button { background: #1D546C; border-color: #1D546C; color: #FFFFFF; }
+:root[data-theme="meadow"] .quick-problem:not(.active) > span,
+:root[data-theme="meadow"] .quick-problem:not(.active) > small { color: #FFFFFF; }
+:root[data-theme="meadow"] .active-line,
+:root[data-theme="meadow"] .pseudo-active,
+:root[data-theme="meadow"] .testcase-button.testcase-active { background: #CBF3BB; border-color: #1D546C; color: #173B2A; }
+
+:root[data-theme="sand"] .search,
+:root[data-theme="sand"] .testcase-selector,
+:root[data-theme="sand"] .panel,
+:root[data-theme="sand"] .complexity-lab,
+:root[data-theme="sand"] .complexity-summary > div,
+:root[data-theme="sand"] .complexity-details article,
+:root[data-theme="sand"] .testcase-button,
+:root[data-theme="sand"] .metric,
+:root[data-theme="sand"] .code-explanation,
+:root[data-theme="sand"] .custom-input textarea,
+:root[data-theme="sand"] .language-picker select,
+:root[data-theme="sand"] .about-dev-dialog,
+:root[data-theme="sand"] .about-dev-details div {
+  border: 1px solid #C9B59C;
+  color: #30271F;
+}
+:root[data-theme="sand"] .code-line code,
+:root[data-theme="sand"] .pseudo-line code,
+:root[data-theme="sand"] .code-explanation p,
+:root[data-theme="sand"] .subtitle,
+:root[data-theme="sand"] .problem-heading p,
+:root[data-theme="sand"] .complexity-summary p,
+:root[data-theme="sand"] .complexity-details p,
+:root[data-theme="sand"] .explanation { color: #30271F; }
+:root[data-theme="sand"] .quick-problem:not(.active),
+:root[data-theme="sand"] .primary-button,
+:root[data-theme="sand"] .search-row button { background: #6B4F3A; border-color: #6B4F3A; color: #FFFFFF; }
+:root[data-theme="sand"] .quick-problem:not(.active) > span,
+:root[data-theme="sand"] .quick-problem:not(.active) > small { color: #FFFFFF; }
+:root[data-theme="sand"] .active-line,
+:root[data-theme="sand"] .pseudo-active,
+:root[data-theme="sand"] .testcase-button.testcase-active { background: #D9CFC7; border-color: #6B4F3A; color: #30271F; }
+
+/* Shared high-contrast controls and labels across all six palettes. */
+:root[data-theme] .theme-toggle,
+:root[data-theme] .secondary-button,
+:root[data-theme] .zoom-controls button,
+:root[data-theme] .theme-menu-close { border-color: var(--border-color); }
+:root[data-theme="berry"] .topbar-label,
+:root[data-theme="berry"] .theme-toggle,
+:root[data-theme="ember"] .topbar-label,
+:root[data-theme="ember"] .theme-toggle { color: var(--text-color); }
+
+
+/* Final palette refinements: keep contrast consistent across the entire app. */
+
+/* Deep Navy: make the light palette color the dominant canvas, with navy used for structure and emphasis. */
+:root[data-theme="navy"] {
+  --page-bg: #F4F4F4 !important;
+  --panel-bg: #FFFFFF !important;
+  --soft-bg: #EAF0F4 !important;
+  --code-bg: #F4F4F4 !important;
+  --text-color: #0C2B4E !important;
+  --muted-color: #34536D !important;
+  --border-color: #1D546C !important;
+  --active-bg: #DCE8EF !important;
+  --accent-color: #1D546C !important;
+  --accent-strong: #0C2B4E !important;
+}
+:root[data-theme="navy"] body,
+:root[data-theme="navy"] .app { background: #F4F4F4 !important; color: #0C2B4E !important; }
+:root[data-theme="navy"] .topbar,
+:root[data-theme="navy"] .search,
+:root[data-theme="navy"] .panel,
+:root[data-theme="navy"] .testcase-selector,
+:root[data-theme="navy"] .complexity-lab,
+:root[data-theme="navy"] .about-dev-dialog { background: #FFFFFF !important; color: #0C2B4E !important; border-color: #1D546C !important; }
+:root[data-theme="navy"] .code,
+:root[data-theme="navy"] .pseudocode,
+:root[data-theme="navy"] .solution-split .code,
+:root[data-theme="navy"] .custom-input textarea,
+:root[data-theme="navy"] .metric,
+:root[data-theme="navy"] .complexity-summary > div,
+:root[data-theme="navy"] .complexity-details article,
+:root[data-theme="navy"] .code-explanation { background: #F4F4F4 !important; color: #0C2B4E !important; border-color: #1D546C !important; }
+:root[data-theme="navy"] .code-line code,
+:root[data-theme="navy"] .pseudo-line code,
+:root[data-theme="navy"] .code-explanation p,
+:root[data-theme="navy"] .code-explanation-title strong,
+:root[data-theme="navy"] .problem-heading h2,
+:root[data-theme="navy"] .problem-heading p,
+:root[data-theme="navy"] .intro h1,
+:root[data-theme="navy"] .subtitle,
+:root[data-theme="navy"] .topbar-label { color: #0C2B4E !important; }
+:root[data-theme="navy"] .quick-problem:not(.active),
+:root[data-theme="navy"] .primary-button,
+:root[data-theme="navy"] .search-row button,
+:root[data-theme="navy"] .brand-mark { background: #0C2B4E !important; border-color: #0C2B4E !important; color: #F4F4F4 !important; }
+:root[data-theme="navy"] .active-line,
+:root[data-theme="navy"] .pseudo-active,
+:root[data-theme="navy"] .testcase-button.testcase-active { background: #DCE8EF !important; color: #0C2B4E !important; border-color: #1D546C !important; }
+:root[data-theme="navy"] .theme-menu,
+:root[data-theme="navy"] .theme-option { background: #FFFFFF !important; color: #0C2B4E !important; }
+
+/* Ember Red: retain the dark-red page, but soften the red-on-red effect.
+   The cream surfaces use deep red for readable text; the dark canvas uses cream text. */
+:root[data-theme="ember"] body,
+:root[data-theme="ember"] .app { background: #3E0703 !important; color: #FFF0C4 !important; }
+:root[data-theme="ember"] .intro h1,
+:root[data-theme="ember"] .intro .subtitle,
+:root[data-theme="ember"] .problem-heading h2,
+:root[data-theme="ember"] .problem-heading p,
+:root[data-theme="ember"] .problem-meta { color: #FFF0C4 !important; }
+:root[data-theme="ember"] .eyebrow { color: #F5DAA7 !important; }
+:root[data-theme="ember"] .topbar,
+:root[data-theme="ember"] .search,
+:root[data-theme="ember"] .testcase-selector,
+:root[data-theme="ember"] .panel,
+:root[data-theme="ember"] .complexity-lab,
+:root[data-theme="ember"] .about-dev-dialog { background: #660B05 !important; color: #FFF0C4 !important; border-color: #8C1007 !important; }
+:root[data-theme="ember"] .code,
+:root[data-theme="ember"] .pseudocode,
+:root[data-theme="ember"] .solution-split .code,
+:root[data-theme="ember"] .custom-input textarea,
+:root[data-theme="ember"] .code-explanation,
+:root[data-theme="ember"] .metric,
+:root[data-theme="ember"] .complexity-summary > div,
+:root[data-theme="ember"] .complexity-details article,
+:root[data-theme="ember"] .testcase-button,
+:root[data-theme="ember"] .theme-menu,
+:root[data-theme="ember"] .theme-option { background: #FFF0C4 !important; color: #660B05 !important; border-color: #A3485A !important; }
+:root[data-theme="ember"] .code-line code,
+:root[data-theme="ember"] .pseudo-line code,
+:root[data-theme="ember"] .code-explanation p,
+:root[data-theme="ember"] .code-explanation-title strong,
+:root[data-theme="ember"] .step-content h3,
+:root[data-theme="ember"] .complexity-details h3,
+:root[data-theme="ember"] .complexity-lab-heading h2,
+:root[data-theme="ember"] .complexity-summary p,
+:root[data-theme="ember"] .complexity-details p,
+:root[data-theme="ember"] .custom-input label,
+:root[data-theme="ember"] .testcase-heading strong { color: #660B05 !important; }
+:root[data-theme="ember"] .primary-button,
+:root[data-theme="ember"] .search-row button,
+:root[data-theme="ember"] .brand-mark,
+:root[data-theme="ember"] .quick-problem:not(.active) { background: #8C1007 !important; border-color: #A3485A !important; color: #FFF0C4 !important; }
+:root[data-theme="ember"] .active-line,
+:root[data-theme="ember"] .pseudo-active,
+:root[data-theme="ember"] .testcase-button.testcase-active { background: #F5DAA7 !important; color: #660B05 !important; border-color: #8C1007 !important; }
+
+/* Make code and important labels heavier in every palette, without changing layout. */
+.code-line code,
+.pseudo-line code {
+  font-weight: 700 !important;
+  text-shadow: 0 0 0 currentColor;
+}
+.line-number,
+.pseudo-line span { font-weight: 600 !important; }
+.code-explanation p,
+.code-explanation-title strong,
+.step-content h3,
+.step-content .explanation,
+.metric strong,
+.map-entry,
+.array-value,
+.section-label,
+.panel-header,
+.testcase-button strong,
+.custom-input label,
+.complexity-summary strong,
+.complexity-details h3 {
+  font-weight: 600;
+}
+:root[data-theme="coffee"] .code-line code,
+:root[data-theme="coffee"] .pseudo-line code { color: #E1DCC9 !important; }
+:root[data-theme="meadow"] .code-line code,
+:root[data-theme="meadow"] .pseudo-line code { color: #173B2A !important; }
+:root[data-theme="sand"] .code-line code,
+:root[data-theme="sand"] .pseudo-line code { color: #30271F !important; }
+
+
+/* Dark Coffee finishing pass: make the selected problem look like a selected state,
+   not like a pale/detached card, and keep its text readable. */
+:root[data-theme="coffee"] .quick-problem {
+  border: 1px solid #412D15 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+:root[data-theme="coffee"] .quick-problem.active {
+  background: #412D15 !important;
+  border: 1px solid #E1DCC9 !important;
+  color: #E1DCC9 !important;
+  box-shadow: inset 0 0 0 1px rgb(225 220 201 / 12%) !important;
+}
+:root[data-theme="coffee"] .quick-problem.active span,
+:root[data-theme="coffee"] .quick-problem.active small,
+:root[data-theme="coffee"] .quick-problem.active strong {
+  color: #E1DCC9 !important;
+}
+:root[data-theme="coffee"] .quick-problem:not(.active) {
+  background: #1F150C !important;
+  border: 1px solid #412D15 !important;
+  color: #E1DCC9 !important;
+}
+:root[data-theme="coffee"] .search {
+  border: 1px solid #412D15 !important;
+  border-radius: 16px !important;
+}
+:root[data-theme="coffee"] .search input {
+  background: #1F150C !important;
+  border-color: #E1DCC9 !important;
+  color: #E1DCC9 !important;
+}
+:root[data-theme="coffee"] .testcase-button.testcase-active {
+  background: #412D15 !important;
+  color: #E1DCC9 !important;
+  border: 1px solid #E1DCC9 !important;
+}
+
+/* Ember Red: use more of the palette's cream color across the app,
+   keeping deep red for text, borders and strong actions. */
+:root[data-theme="ember"] body,
+:root[data-theme="ember"] .app { background: #3E0703 !important; color: #FFF0C4 !important; }
+:root[data-theme="ember"] .topbar,
+:root[data-theme="ember"] .search,
+:root[data-theme="ember"] .testcase-selector,
+:root[data-theme="ember"] .panel,
+:root[data-theme="ember"] .complexity-lab,
+:root[data-theme="ember"] .about-dev-dialog,
+:root[data-theme="ember"] .theme-menu {
+  background: #FFF0C4 !important; color: #660B05 !important; border-color: #A3485A !important;
+}
+:root[data-theme="ember"] .code,
+:root[data-theme="ember"] .pseudocode,
+:root[data-theme="ember"] .solution-split .code,
+:root[data-theme="ember"] .custom-input textarea,
+:root[data-theme="ember"] .code-explanation,
+:root[data-theme="ember"] .metric,
+:root[data-theme="ember"] .complexity-summary > div,
+:root[data-theme="ember"] .complexity-details article,
+:root[data-theme="ember"] .testcase-button,
+:root[data-theme="ember"] .theme-option {
+  background: #FFF5D8 !important; color: #660B05 !important; border-color: #A3485A !important;
+}
+:root[data-theme="ember"] .intro h1,
+:root[data-theme="ember"] .intro .subtitle,
+:root[data-theme="ember"] .problem-heading h2,
+:root[data-theme="ember"] .problem-heading p,
+:root[data-theme="ember"] .problem-meta { color: #FFF0C4 !important; }
+:root[data-theme="ember"] .code-line code,
+:root[data-theme="ember"] .pseudo-line code,
+:root[data-theme="ember"] .code-explanation p,
+:root[data-theme="ember"] .code-explanation-title strong,
+:root[data-theme="ember"] .step-content h3,
+:root[data-theme="ember"] .complexity-details h3,
+:root[data-theme="ember"] .complexity-lab-heading h2,
+:root[data-theme="ember"] .complexity-summary p,
+:root[data-theme="ember"] .complexity-details p,
+:root[data-theme="ember"] .custom-input label,
+:root[data-theme="ember"] .testcase-heading strong { color: #660B05 !important; }
+:root[data-theme="ember"] .primary-button,
+:root[data-theme="ember"] .search-row button,
+:root[data-theme="ember"] .brand-mark,
+:root[data-theme="ember"] .quick-problem:not(.active) {
+  background: #8C1007 !important; border-color: #A3485A !important; color: #FFF0C4 !important;
+}
+:root[data-theme="ember"] .quick-problem.active,
+:root[data-theme="ember"] .active-line,
+:root[data-theme="ember"] .pseudo-active,
+:root[data-theme="ember"] .testcase-button.testcase-active {
+  background: #F5DAA7 !important; color: #660B05 !important; border-color: #8C1007 !important;
+}
+
+/* Stronger code weight everywhere: use bold monospace glyphs and avoid thin inherited font styles. */
+.code-line,
+.code-line code,
+.pseudo-line,
+.pseudo-line code,
+.code pre,
+.pseudocode pre,
+.solution-code,
+pre code {
+  font-weight: 750 !important;
+  -webkit-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
+}
+.code-line code,
+.pseudo-line code,
+pre code {
+  font-family: ui-monospace, "Cascadia Code", "JetBrains Mono", "SFMono-Regular", Consolas, monospace !important;
+  font-variation-settings: "wght" 750;
+}
+.line-number,
+.pseudo-line .line-number {
+  font-weight: 700 !important;
+  opacity: 0.95 !important;
+}
+
+
+/* Stepwise motion language: quiet, purposeful, and respectful of reduced-motion settings. */
+.intro, .search, .problem-heading, .testcase-selector, .workspace .panel {
+  will-change: opacity, transform;
+}
+.problem-heading h2 {
+  letter-spacing: -0.035em;
+}
+.intro h1 {
+  letter-spacing: -0.045em;
+}
+.topbar {
+  backdrop-filter: blur(10px);
+}
+.brand-mark {
+  transition: transform 220ms ease, border-radius 220ms ease;
+}
+.brand:hover .brand-mark {
+  transform: rotate(-7deg) translateY(-1px);
+  border-radius: 10px;
+}
+button {
+  transition:
+    transform 160ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+button:not(:disabled):active {
+  transform: translateY(1px) scale(0.985);
+}
+.quick-problem,
+.testcase-button,
+.theme-option,
+.metric,
+.map-entry,
+.array-value {
+  transition:
+    transform 180ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
+}
+.quick-problem:hover,
+.testcase-button:hover,
+.theme-option:hover {
+  transform: translateY(-2px);
+}
+.array-value.selected,
+.array-value.matched {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+}
+.code-line.active-line,
+.pseudo-line.pseudo-active {
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+.code-explanation {
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+.explanation-pulse {
+  animation: stepwise-pulse 2.2s ease-in-out infinite;
+}
+@keyframes stepwise-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+.theme-option-swatches i {
+  transition: transform 220ms ease;
+}
+.theme-option:hover .theme-option-swatches i:nth-child(1) { transform: translateY(-2px); }
+.theme-option:hover .theme-option-swatches i:nth-child(2) { transform: translateY(2px); }
+.theme-option:hover .theme-option-swatches i:nth-child(3) { transform: translateY(-2px); }
+.theme-option:hover .theme-option-swatches i:nth-child(4) { transform: translateY(2px); }
+.about-dev-backdrop {
+  animation: backdrop-in 180ms ease-out both;
+}
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+  .intro, .search, .problem-heading, .testcase-selector, .workspace .panel {
+    will-change: auto;
+  }
+}
+
+
+/* Theme menu must sit above the problem search card and remain fully selectable. */
+.topbar {
+  position: sticky !important;
+  top: 0;
+  z-index: 5000 !important;
+  overflow: visible !important;
+}
+.theme-picker-wrap {
+  position: relative !important;
+  z-index: 6000 !important;
+}
+.theme-menu {
+  position: absolute !important;
+  z-index: 7000 !important;
+  max-height: min(78vh, 560px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.search,
+.search-row,
+.search-row + * {
+  z-index: auto;
+}
+.theme-option {
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+}
+.theme-option:focus-visible,
+.theme-toggle:focus-visible,
+.theme-menu-close:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+/* Dark Coffee has been removed from the theme picker; keep Deep Navy as the default fallback. */
