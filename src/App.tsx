@@ -4,8 +4,12 @@ import { animate } from "animejs";
 import type { Language, VisualStep, Problem } from "./engine/types";
 import "./App.css";
 import { modularProblems } from "./problems/registry.ts";
+import rawCatalog from "../data/catalog.json";
+import { loadCatalog } from "./catalog/load-catalog.ts";
+import { integrateCatalog } from "./catalog/integrate-catalog.ts";
 
-const problems: Problem[] = [...modularProblems];
+const catalog = loadCatalog(rawCatalog);
+const problems: Problem[] = integrateCatalog(catalog, modularProblems);
 
 type ThemeId = "navy" | "berry" | "ember" | "meadow" | "sand";
 

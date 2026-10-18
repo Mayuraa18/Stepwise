@@ -1,0 +1,108 @@
+[
+  {
+    "id": "two-sum",
+    "title": "Two Sum",
+    "difficulty": "Easy",
+    "tags": [
+      "Array",
+      "Hash Table"
+    ],
+    "description": "Find two different array elements whose values add up to a target.",
+    "constraints": [
+      "The input must contain at least two numbers.",
+      "A valid pair is guaranteed to exist."
+    ],
+    "examples": [
+      {
+        "input": "nums = [2, 7, 11, 15], target = 9",
+        "output": "[0, 1]",
+        "explanation": "The values at indices 0 and 1 add up to 9."
+      }
+    ],
+    "visualizerId": "1"
+  },
+  {
+    "id": "binary-search",
+    "title": "Binary Search",
+    "difficulty": "Easy",
+    "tags": [
+      "Array",
+      "Binary Search"
+    ],
+    "description": "Find the index of a target value in a sorted array.",
+    "constraints": [
+      "The input array is sorted in ascending order."
+    ],
+    "examples": [
+      {
+        "input": "nums = [-4, 0, 3, 8, 12], target = 8",
+        "output": "3",
+        "explanation": "The target value is located at index 3."
+      }
+    ],
+    "visualizerId": "704"
+  },
+  {
+    "id": "best-time-to-buy-sell-stock",
+    "title": "Best Time to Buy and Sell Stock",
+    "difficulty": "Easy",
+    "tags": [
+      "Array",
+      "Dynamic Programming"
+    ],
+    "description": "Calculate the maximum profit from one purchase followed by one sale.",
+    "constraints": [
+      "The sale must occur after the purchase."
+    ],
+    "examples": [
+      {
+        "input": "prices = [7, 2, 6, 1, 8]",
+        "output": "7",
+        "explanation": "Buying at 1 and selling later at 8 gives a profit of 7."
+      }
+    ],
+    "visualizerId": "121"
+  },
+  {
+    "id": "maximum-subarray",
+    "title": "Maximum Subarray",
+    "difficulty": "Medium",
+    "tags": [
+      "Array",
+      "Dynamic Programming"
+    ],
+    "description": "Find the largest sum obtainable from a non-empty contiguous section of an array.",
+    "constraints": [
+      "The array contains at least one number."
+    ],
+    "examples": [
+      {
+        "input": "nums = [-2, 3, -1, 4, -5]",
+        "output": "6",
+        "explanation": "The contiguous section [3, -1, 4] has sum 6."
+      }
+    ],
+    "visualizerId": "53"
+  },
+  {
+    "id": "valid-parentheses",
+    "title": "Valid Parentheses",
+    "difficulty": "Easy",
+    "tags": [
+      "String",
+      "Stack"
+    ],
+    "description": "Determine whether brackets are correctly matched and properly nested.",
+    "constraints": [
+      "The input contains only bracket characters."
+    ],
+    "examples": [
+      {
+        "input": "s = \"([])\"",
+        "output": "true",
+        "explanation": "Each opening bracket has a matching closing bracket in the correct order."
+      }
+    ],
+    "visualizerId": "20"
+  }
+]

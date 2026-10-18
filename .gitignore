@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets and environment configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials.json
+
+# Local databases and private exports
+*.sqlite
+*.sqlite3
+*.db
+private-data/
