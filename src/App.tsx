@@ -263,7 +263,30 @@ export default function App() {
 
               <div className="hash-map">{step.memory.length?step.memory.map((m,i)=><span className="map-entry" key={`${m.label}-${i}`}>{m.label} → {m.value}</span>):<span className="empty-state">{problem.id==="1"?"Empty map":problem.id==="20"?"Stack is empty":"No extra data structure"}</span>}</div>
 
-              {step.result&&<div className="result"><span>✓</span><div><strong>{step.result}</strong><p>Result for this input</p></div></div>}
+{step.result && (
+  <div
+    className={`result ${
+      step.resultStatus === "failure"
+        ? "result-invalid"
+        : step.resultStatus === "info"
+          ? "result-info"
+          : "result-success"
+    }`}
+    role="status"
+  >
+    <span>
+      {step.resultStatus === "failure"
+        ? "✕"
+        : step.resultStatus === "info"
+          ? "i"
+          : "✓"}
+    </span>
+    <div>
+      <strong>{step.result}</strong>
+      <p>Result for this input</p>
+    </div>
+  </div>
+)}
 
               <div className="controls"><button type="button" className="secondary-button" onClick={()=>setStepIndex(i=>Math.max(0,i-1))} disabled={stepIndex===0}>← Previous</button><button type="button" className="secondary-button" onClick={()=>setStepIndex(0)}>↺ Reset</button><button type="button" className="primary-button" onClick={()=>setStepIndex(i=>Math.min(steps.length-1,i+1))} disabled={stepIndex>=steps.length-1}>Next →</button></div>
 

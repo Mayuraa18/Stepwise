@@ -3,6 +3,9 @@ export type Language = "Python" | "C++" | "Java";
 
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
+
+export type ResultStatus = "success" | "failure" | "info";
+
 export type VisualStep = {
   title: string;
   explanation: string;
@@ -13,8 +16,10 @@ export type VisualStep = {
   variables: { label: string; value: string }[];
   memory: { label: string; value: string }[];
   result: string | null;
+  resultStatus?: ResultStatus;
   activeRange?: [number, number];
 };
+
 
 export type ParsedProblemInput = {
   array: number[];

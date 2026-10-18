@@ -85,12 +85,20 @@ export function adaptArrayProblem<
         array: inputArray,
         variables,
         memory,
-        result:
+                result:
           result == null
             ? null
             : typeof result === "string"
               ? result
               : JSON.stringify(result),
+        resultStatus:
+          result == null
+            ? "info"
+            : typeof result === "boolean"
+              ? result
+                ? "success"
+                : "failure"
+              : "success",
       };
     });
   }
