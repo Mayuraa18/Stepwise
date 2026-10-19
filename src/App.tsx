@@ -590,6 +590,15 @@ export default function App() {
 
             <div className="solution-content" style={{zoom:solutionZoom}}><div className="solution-split"><div className="code">{problem.languages[language].map((line,i)=><div className={`code-line ${highlightedLine===i+1?"active-line":""}`} key={`${language}-${i}`}><span className="line-number">{i+1}</span><code>{line}</code></div>)}</div></div><p className="code-note">The highlighted line and explanation update as you move through the steps.</p></div>
 
+          
+            <aside className="code-explanation-corner" aria-live="polite">
+              <div className="code-explanation-corner-heading">
+                <span className="explanation-pulse" aria-hidden="true"></span>
+                <strong>Code explanation</strong>
+                <span>Line {highlightedLine}</span>
+              </div>
+              <p>{step?.explanation ?? "Run an input to see what the highlighted line is doing."}</p>
+            </aside>
           </section>
 
         <div className="panel visual-panel"><div className="panel-header"><span>Execution visualizer</span><div className="visualizer-header-actions"><div className="zoom-controls"><button type="button" onClick={()=>setVisualizerZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={visualizerZoom<=.8}>A−</button><button type="button" onClick={()=>setVisualizerZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={visualizerZoom>=1.4}>A+</button></div>{(
@@ -700,12 +709,7 @@ export default function App() {
         </div>
 
       
-        <section className="panel explanation-panel">
-          <div className="panel-header"><span>4. Code explanation</span><span className="explanation-line-label">Line {highlightedLine}</span></div>
-          <div className="code-explanation-content">
-            <aside className="code-explanation"><div className="code-explanation-title"><span className="explanation-pulse"/><strong>What this code is doing</strong><span>Line {highlightedLine}</span></div><p>{step?.explanation??"Edit the input and run it to generate execution steps."}</p></aside>
-          </div>
-        </section>
+
 
       </section>
 
