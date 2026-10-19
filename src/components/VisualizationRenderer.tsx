@@ -75,7 +75,7 @@ function KeyValueEntries({ items }: { items: MemoryItem[] }) {
     <div className="hash-map">
       {items.map((item, index) => (
         <span className="map-entry" key={`${item.label}-${index}`}>
-          {item.label} → {item.value}
+          {item.label.startsWith("Set ") ? item.value : `${item.label} → ${item.value}`}
         </span>
       ))}
     </div>
