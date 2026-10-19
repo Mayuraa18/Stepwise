@@ -47,7 +47,12 @@ export default class AnimatedArray extends Component<
   getSnapshotBeforeUpdate(): Map<string, DOMRect> {
     const rects = new Map<string, DOMRect>();
     for (const [id, element] of this.itemRefs) {
-      if (element.isConnected) rects.set(id, element.getBoundingClientRect());
+      if (!element.isConnected) continue;
+
+      // Finish any in-flight FLIP animation before measuring the previous layout.
+      // Otherwise rapid stepping can measure a temporary transform and compound it.
+      element.getAnimations().forEach((animation) => animation.cancel());
+      rects.set(id, element.getBoundingClientRect());
     }
     return rects;
   }
@@ -57,7 +62,11 @@ export default class AnimatedArray extends Component<
     _prevState: Readonly<AnimatedArrayState>,
     before: Map<string, DOMRect>,
   ): void {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) return;
 
     for (const token of this.state.tokens) {
       const element = this.itemRefs.get(token.id);
