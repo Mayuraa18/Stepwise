@@ -16,11 +16,15 @@ describe("Move Zeroes synchronized trace", () => {
     const advance = steps.find((step) => step.id === "advance-1");
 
     expect(inspect?.codeLine).toBe(3);
+    expect(inspect?.pseudocodeLine).toBe(1);
     expect(inspect?.state.nums).toEqual([0, 1, 0, 3, 12]);
     expect(place?.codeLine).toBe(5);
+    expect(place?.pseudocodeLine).toBe(2);
     expect(place?.state.nums).toEqual([1, 0, 0, 3, 12]);
     expect(place?.state.writeIndex).toBe(0);
+    expect(place?.state.arrayItemIds).toEqual(["item-1", "item-0", "item-2", "item-3", "item-4"]);
     expect(advance?.codeLine).toBe(6);
+    expect(advance?.pseudocodeLine).toBe(2);
     expect(advance?.state.writeIndex).toBe(1);
     expect(advance?.state.nums).toEqual([1, 0, 0, 3, 12]);
   });
