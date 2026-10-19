@@ -56,11 +56,13 @@ describe("UI-facing problem registry", () => {
 
     const steps = problem.run("0, 1, 0, 3, 12");
     const firstIds = steps[0]?.visualization?.items?.map((item) => item.id);
-    const moveOne = steps.find((step) => step.title === "Place 1 before the zeros");
+    const moveOne = steps.find((step) => step.title === "Move 1 from index 1 to index 0");
     const finalStep = steps.at(-1);
 
     expect(firstIds).toEqual(["item-0", "item-1", "item-2", "item-3", "item-4"]);
     expect(moveOne?.array).toEqual([1, 0, 0, 3, 12]);
+    expect(moveOne?.line).toBe(5);
+    expect(moveOne?.pseudocodeLine).toBe(2);
     expect(moveOne?.visualization?.items?.map((item) => item.id)?.[0]).toBe("item-1");
     expect(finalStep?.array).toEqual([1, 3, 12, 0, 0]);
     expect(finalStep?.result).toBe("[1,3,12,0,0]");
