@@ -126,6 +126,8 @@ export default function App() {
   const [language, setLanguage] = useState<Language>("Python");
 
   const [stepIndex, setStepIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(500);
   const [algorithmApproach, setAlgorithmApproach] = useState<AlgorithmApproach>("optimal");
 
   const [input, setInput] = useState(problems[0].defaultInput);
@@ -218,6 +220,62 @@ export default function App() {
   const steps = execution.steps;
   const executionError = execution.error;
   const step = steps[Math.min(stepIndex, Math.max(steps.length-1,0))];
+
+  const pointerLabels = useMemo(() => {
+    const labels: Record<number, string[]> = {};
+    if (!step) return labels;
+
+    const pointerNames: Record<string, string> = {
+      currentIndex: "i",
+      writeIndex: "write",
+      i: "i",
+      j: "j",
+      left: "left",
+      right: "right",
+      read: "read",
+      write: "write",
+      slow: "slow",
+      fast: "fast",
+      low: "low",
+      high: "high",
+      mid: "mid",
+    };
+
+    for (const variable of step.variables) {
+      const name = pointerNames[variable.label];
+      if (!name || !/^-?\\d+$/.test(variable.value)) continue;
+      const index = Number(variable.value);
+      if (index < 0 || index >= step.array.length) continue;
+      labels[index] ??= [];
+      if (!labels[index].includes(name)) labels[index].push(name);
+    }
+
+    return labels;
+  }, [step]);
+
+  useEffect(() => {
+    setIsPlaying(false);
+  }, [activeId, input, algorithmApproach]);
+
+  useEffect(() => {
+    if (!isPlaying || steps.length < 2) return;
+    if (stepIndex >= steps.length - 1) {
+      setIsPlaying(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setStepIndex((current) => {
+        if (current >= steps.length - 1) {
+          setIsPlaying(false);
+          return current;
+        }
+        return current + 1;
+      });
+    }, playbackSpeed);
+
+    return () => window.clearTimeout(timer);
+  }, [isPlaying, playbackSpeed, stepIndex, steps.length]);
 
   // The input/test-case panel is immutable during playback. Only the algorithm-state
   // visualizer below follows each trace snapshot.
@@ -660,6 +718,7 @@ export default function App() {
                       ? [...new Set(Object.values(step.visualization.pointers)
                           .filter((value): value is number => typeof value === "number"))]
                       : []}
+                    pointerLabels={pointerLabels}
                     label="Live algorithm state"
                   />
                   {(problem.id === "1" || problem.id === "217") && (
@@ -710,7 +769,54 @@ export default function App() {
   </div>
 )}
 
-              <div className="controls"><button type="button" className="secondary-button" onClick={()=>setStepIndex(i=>Math.max(0,i-1))} disabled={stepIndex===0}>← Previous</button><button type="button" className="secondary-button" onClick={()=>setStepIndex(0)}>↺ Reset</button><button type="button" className="primary-button" onClick={()=>setStepIndex(i=>Math.min(steps.length-1,i+1))} disabled={stepIndex>=steps.length-1}>Next →</button></div>
+              <div className="playback-bar" aria-label="Execution playback">
+                <div className="playback-toolbar">
+                  <button
+                    type="button"
+                    className={isPlaying ? "secondary-button playback-toggle" : "primary-button playback-toggle"}
+                    onClick={() => {
+                      if (stepIndex >= steps.length - 1) setStepIndex(0);
+                      setIsPlaying((playing) => !playing);
+                    }}
+                    disabled={steps.length < 2}
+                  >
+                    {isPlaying ? "Ⅱ Pause" : stepIndex >= steps.length - 1 ? "↻ Replay" : "▶ Play"}
+                  </button>
+                  <label className="playback-speed">
+                    <span>Speed</span>
+                    <select value={playbackSpeed} onChange={(event) => setPlaybackSpeed(Number(event.target.value))}>
+                      <option value={1000}>0.5×</option>
+                      <option value={700}>0.75×</option>
+                      <option value={500}>1×</option>
+                      <option value={330}>1.5×</option>
+                      <option value={250}>2×</option>
+                    </select>
+                  </label>
+                </div>
+                <input
+                  className="execution-timeline"
+                  type="range"
+                  min={0}
+                  max={Math.max(steps.length - 1, 0)}
+                  value={stepIndex}
+                  onChange={(event) => {
+                    setIsPlaying(false);
+                    setStepIndex(Number(event.target.value));
+                  }}
+                  aria-label="Scrub execution timeline"
+                  aria-valuetext={`Step ${stepIndex + 1} of ${steps.length}`}
+                  disabled={steps.length < 2}
+                />
+                <div className="playback-meta">
+                  <span>Step {stepIndex + 1} of {steps.length}</span>
+                  <span>{Math.round((stepIndex / Math.max(steps.length - 1, 1)) * 100)}% complete</span>
+                </div>
+              </div>
+              <div className="controls">
+                <button type="button" className="secondary-button" onClick={() => { setIsPlaying(false); setStepIndex((i) => Math.max(0, i - 1)); }} disabled={stepIndex === 0}>← Previous</button>
+                <button type="button" className="secondary-button" onClick={() => { setIsPlaying(false); setStepIndex(0); }}>↺ Reset</button>
+                <button type="button" className="primary-button" onClick={() => { setIsPlaying(false); setStepIndex((i) => Math.min(steps.length - 1, i + 1)); }} disabled={stepIndex >= steps.length - 1}>Next →</button>
+              </div>
 
             </>:<div className="step-content"><h3>Check your input</h3><p className="explanation">Fix the input above, then choose Run input to create the execution steps.</p></div>}
 
