@@ -140,7 +140,7 @@ function moveZeroesSteps({ nums: input }: Input): ExecutionStep<State>[] {
   steps.push({
     id: "initialize",
     codeLine: 2,
-    pseudocodeLine: 1,
+    pseudocodeLine: 0,
     title: "Initialize the write pointer",
     explanation: "write = 0 marks the first position where a non-zero value can be placed.",
     state: snapshot(null, null),
@@ -152,7 +152,7 @@ function moveZeroesSteps({ nums: input }: Input): ExecutionStep<State>[] {
     steps.push({
       id: `inspect-${i}`,
       codeLine: 3,
-      pseudocodeLine: 2,
+      pseudocodeLine: 1,
       title: `Inspect index ${i}`,
       explanation: `Read nums[${i}] = ${value}. The scan pointer i is at index ${i}, and write = ${write} marks the next non-zero position.`,
       state: snapshot(i, value),
@@ -162,7 +162,7 @@ function moveZeroesSteps({ nums: input }: Input): ExecutionStep<State>[] {
       steps.push({
         id: `zero-${i}`,
         codeLine: 4,
-        pseudocodeLine: 3,
+        pseudocodeLine: 2,
         title: `Keep zero at index ${i} for now`,
         explanation: `nums[${i}] is 0, so it is skipped. No values move and write stays at ${write}; the next non-zero value can use this position.`,
         state: snapshot(i, value),
@@ -203,7 +203,7 @@ function moveZeroesSteps({ nums: input }: Input): ExecutionStep<State>[] {
   steps.push({
     id: "complete",
     codeLine: 3,
-    pseudocodeLine: 4,
+    pseudocodeLine: 3,
     title: "All zeros moved to the end",
     explanation: `The array is now [${nums.join(", ")}]. Non-zero values retain their original relative order, and the remaining positions contain zeros.`,
     state: snapshot(null, null, [...nums]),
