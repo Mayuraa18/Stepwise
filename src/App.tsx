@@ -641,7 +641,7 @@ export default function App() {
 
               <div className="section-label">{problem.visualization.inputLabel}</div>
 
-              {problem.visualization.kind === "string" ? <div className="bracket-string">{input.trim().split("").map((c,i)=><span key={i} className={step.currentIndex===i?"selected":""}>{c}</span>)}</div> :
+              {problem.visualization.kind === "string" ? <div className="bracket-string" aria-label="Fixed input string">{input.trim().split("").map((c,i)=><span key={i}>{c}</span>)}</div> :
 
               <div className="array" style={{gridTemplateColumns:`repeat(${Math.min(Math.max(fixedInputArray.length,1),8)}, minmax(0,1fr))`}}>{fixedInputArray.map((num,i)=><div className="array-item" key={i}><div className="array-value">{num}</div><span className="array-index">index {i}</span></div>)}</div>}
 
