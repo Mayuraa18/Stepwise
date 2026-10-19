@@ -578,28 +578,23 @@ export default function App() {
 
       <section className="workspace">
 
-        
+        <div className="panel code-panel">
 
-          <section className="panel pseudocode-panel pseudocode-section"><div className="panel-header"><span>1. Understand pseudocode first</span><div className="zoom-controls"><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={pseudocodeZoom<=.8}>A−</button><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={pseudocodeZoom>=1.4}>A+</button></div></div>
+          <section className="pseudocode-section"><div className="panel-header"><span>1. Understand the pseudocode first</span><div className="zoom-controls"><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={pseudocodeZoom<=.8}>A−</button><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={pseudocodeZoom>=1.4}>A+</button></div></div>
 
             <div className="pseudocode-content" style={{zoom:pseudocodeZoom}}><div className="pseudocode-intro">Try to explain each step in your own words before looking at the implementation.</div><div className="pseudocode">{((approachMetadata?.pseudocode ?? problem.pseudocode) as readonly string[]).map((line,i)=><div className={`pseudo-line ${step?.pseudocodeLine===i?"pseudo-active":""}`} key={`${i}-${line}`}><span>{i+1}</span><code>{line}</code></div>)}</div></div>
 
           </section>
 
-          <section className="panel solution-panel solution-section"><div className="panel-header code-panel-header"><span>2. Main solution</span><div className="solution-header-actions"><div className="zoom-controls"><button type="button" onClick={()=>setSolutionZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={solutionZoom<=.8}>A−</button><button type="button" onClick={()=>setSolutionZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={solutionZoom>=1.4}>A+</button></div><label className="language-picker"><span className="sr-only">Programming language</span><select value={language} onChange={e=>setLanguage(e.target.value as Language)}><option>Python</option><option>C++</option><option>Java</option></select></label></div></div>
+          <section className="solution-section"><div className="panel-header code-panel-header"><span>2. Main solution</span><div className="solution-header-actions"><div className="zoom-controls"><button type="button" onClick={()=>setSolutionZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={solutionZoom<=.8}>A−</button><button type="button" onClick={()=>setSolutionZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={solutionZoom>=1.4}>A+</button></div><label className="language-picker"><span className="sr-only">Programming language</span><select value={language} onChange={e=>setLanguage(e.target.value as Language)}><option>Python</option><option>C++</option><option>Java</option></select></label></div></div>
 
-            <div className="solution-content" style={{zoom:solutionZoom}}><div className="solution-split"><div className="code">{problem.languages[language].map((line,i)=><div className={`code-line ${highlightedLine===i+1?"active-line":""}`} key={`${language}-${i}`}><span className="line-number">{i+1}</span><code>{line}</code></div>)}</div></div><p className="code-note">The highlighted line and explanation update as you move through the steps.</p></div>
+            <div className="solution-content" style={{zoom:solutionZoom}}><div className="solution-split"><div className="code">{problem.languages[language].map((line,i)=><div className={`code-line ${highlightedLine===i+1?"active-line":""}`} key={`${language}-${i}`}><span className="line-number">{i+1}</span><code>{line}</code></div>)}</div><aside className="code-explanation"><div className="code-explanation-title"><span className="explanation-pulse"/><strong>What this code is doing</strong><span>Line {highlightedLine}</span></div><p>{step?.explanation??"Edit the input and run it to generate execution steps."}</p></aside></div><p className="code-note">The highlighted line and explanation update as you move through the steps.</p></div>
 
-          
-            <aside className="code-explanation-corner" aria-live="polite">
-              <div className="code-explanation-corner-heading">
-                <span className="explanation-pulse" aria-hidden="true"></span>
-                <strong>Code explanation</strong>
-                <span>Line {highlightedLine}</span>
-              </div>
-              <p>{step?.explanation ?? "Run an input to see what the highlighted line is doing."}</p>
-            </aside>
           </section>
+
+        </div>
+
+
 
         <div className="panel visual-panel"><div className="panel-header"><span>Execution visualizer</span><div className="visualizer-header-actions"><div className="zoom-controls"><button type="button" onClick={()=>setVisualizerZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={visualizerZoom<=.8}>A−</button><button type="button" onClick={()=>setVisualizerZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={visualizerZoom>=1.4}>A+</button></div>{(
   <div className="approach-switch" role="group" aria-label="Algorithm approach">
@@ -707,9 +702,6 @@ export default function App() {
           </div>
 
         </div>
-
-      
-
 
       </section>
 
