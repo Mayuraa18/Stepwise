@@ -580,7 +580,7 @@ export default function App() {
 
         
 
-          <section className="panel pseudocode-panel pseudocode-section"><div className="panel-header"><span>1. Understand the pseudocode first</span><div className="zoom-controls"><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={pseudocodeZoom<=.8}>A−</button><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={pseudocodeZoom>=1.4}>A+</button></div></div>
+          <section className="panel pseudocode-panel pseudocode-section"><div className="panel-header"><span>1. Understand pseudocode first</span><div className="zoom-controls"><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={pseudocodeZoom<=.8}>A−</button><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={pseudocodeZoom>=1.4}>A+</button></div></div>
 
             <div className="pseudocode-content" style={{zoom:pseudocodeZoom}}><div className="pseudocode-intro">Try to explain each step in your own words before looking at the implementation.</div><div className="pseudocode">{((approachMetadata?.pseudocode ?? problem.pseudocode) as readonly string[]).map((line,i)=><div className={`pseudo-line ${step?.pseudocodeLine===i?"pseudo-active":""}`} key={`${i}-${line}`}><span>{i+1}</span><code>{line}</code></div>)}</div></div>
 
