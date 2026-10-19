@@ -1,7 +1,6 @@
 import type {
   Problem,
   ProblemDefinition,
-  VisualizationKind,
 } from "../engine/types.ts";
 import { createVisualTrace } from "../engine/trace.ts";
 
@@ -29,9 +28,6 @@ export type GraphState = {
   stack?: string[];
   pointers?: Record<string, string | number | null>;
 };
-
-const isGraphKind = (kind: VisualizationKind): kind is "tree" | "graph" =>
-  kind === "tree" || kind === "graph";
 
 function validateSnapshot(state: GraphState): void {
   const ids = new Set<string>();
@@ -69,10 +65,6 @@ export function adaptGraphProblem<
   definition: ProblemDefinition<Input, Output, State>,
   kind: "tree" | "graph",
 ): Problem {
-  if (!isGraphKind(kind)) {
-    throw new Error("Graph adapter requires a tree or graph visualization kind.");
-  }
-
   function parse(rawInput: string) {
     const input = definition.parseInput(rawInput);
     return {
