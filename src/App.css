@@ -2519,3 +2519,47 @@ html, body, #root {
   .workspace > .solution-panel { grid-area: solution !important; }
   .workspace > .visual-panel { grid-area: visualizer !important; }
 }
+
+
+/* Zoom-safe workspace layout: choose columns by available width, not viewport height. */
+.workspace {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  grid-template-rows: minmax(220px, 0.9fr) minmax(320px, 1.1fr) !important;
+  grid-template-areas:
+    "pseudocode solution"
+    "visualizer visualizer" !important;
+  align-items: stretch;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+.workspace > .pseudocode-panel { grid-area: pseudocode !important; min-width: 0; }
+.workspace > .solution-panel { grid-area: solution !important; min-width: 0; }
+.workspace > .visual-panel {
+  grid-area: visualizer !important;
+  grid-column: 1 / -1 !important;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.workspace > .explanation-panel { display: none !important; }
+
+@media (max-width: 699px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto !important;
+    grid-template-areas:
+      "pseudocode"
+      "solution"
+      "visualizer" !important;
+  }
+  .workspace > .pseudocode-panel,
+  .workspace > .solution-panel,
+  .workspace > .visual-panel {
+    grid-column: 1 !important;
+  }
+  .workspace > .pseudocode-panel { grid-area: pseudocode !important; }
+  .workspace > .solution-panel { grid-area: solution !important; }
+  .workspace > .visual-panel { grid-area: visualizer !important; }
+}
