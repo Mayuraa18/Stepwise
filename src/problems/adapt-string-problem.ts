@@ -88,7 +88,7 @@ export function adaptStringProblem<
     category: definition.tags.join(", "),
     visualization: {
       kind: "string",
-      inputLabel: "Bracket input (character codes shown)",
+      inputLabel: "Bracket input · original string",
       stateLabel: "Stack · last in, first out",
       emptyStateLabel: "Stack is empty",
     },
