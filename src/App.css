@@ -2045,3 +2045,125 @@ button:not(:disabled):active {
     transition: none;
   }
 }
+
+
+/* Workspace polish: give code a little more room, tighten spacing, and refine scrollbars. */
+@media (min-width: 1051px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+.workspace > .panel {
+  min-width: 0;
+}
+
+.panel-header {
+  padding-inline: 14px;
+}
+
+.step-content {
+  padding: 10px 14px 6px;
+}
+
+.change-insight {
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  gap: 8px;
+}
+
+.section-label {
+  margin: 10px 14px 7px;
+}
+
+.array {
+  gap: 6px;
+  padding-inline: 14px;
+}
+
+.metrics {
+  gap: 8px;
+  padding: 12px 14px 0;
+}
+
+.metric {
+  padding: 9px 10px;
+  gap: 5px;
+}
+
+.hash-map {
+  gap: 6px;
+  padding-inline: 14px;
+}
+
+.visualizer-content .hash-map {
+  gap: 8px;
+  padding-inline: 14px;
+}
+
+.visualizer-content > .controls {
+  padding: 10px 14px 14px;
+  gap: 8px;
+}
+
+/* Slim, low-contrast scrollbars that become clearer on hover. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted-color) 48%, transparent) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted-color) 42%, transparent);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted-color) 72%, transparent);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+@media (max-width: 1050px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 520px) {
+  .panel-header {
+    padding-inline: 12px;
+  }
+
+  .step-content {
+    padding-inline: 12px;
+  }
+
+  .section-label {
+    margin-inline: 12px;
+  }
+
+  .array,
+  .metrics,
+  .hash-map,
+  .visualizer-content .hash-map {
+    padding-inline: 12px;
+  }
+}
