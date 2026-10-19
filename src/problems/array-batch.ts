@@ -179,7 +179,7 @@ function moveZeroesSteps({ nums: input }: Input): ExecutionStep<State>[] {
     steps.push({
       id: `place-${i}`,
       codeLine: 5,
-      pseudocodeLine: 3,
+      pseudocodeLine: 2,
       title: i === destination
         ? `Keep ${value} at index ${destination}`
         : `Move ${value} from index ${i} to index ${destination}`,
@@ -193,7 +193,7 @@ function moveZeroesSteps({ nums: input }: Input): ExecutionStep<State>[] {
     steps.push({
       id: `advance-${i}`,
       codeLine: 6,
-      pseudocodeLine: 3,
+      pseudocodeLine: 2,
       title: `Advance write to ${write}`,
       explanation: `Index ${destination} now contains a non-zero value. Advance write to ${write}, the next position for a non-zero value.`,
       state: snapshot(i, value),
