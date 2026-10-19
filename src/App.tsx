@@ -665,7 +665,7 @@ export default function App() {
                   {(problem.id === "1" || problem.id === "217") && (
                     <div className="array-auxiliary-state">
                       <div className="section-label">
-                        {problem.id === "1" ? "Hash map · value → index" : "Seen set"}
+                        {problem.id === "1" ? "Map contents" : "Values already seen"}
                       </div>
                       <VisualizationRenderer
                         kind="hash-map"
