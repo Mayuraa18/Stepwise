@@ -2304,3 +2304,16 @@ html, body, #root {
   .workspace > .panel { min-height: 220px; }
   .solution-section .code-line code { white-space: pre-wrap; overflow-wrap: anywhere; }
 }
+
+@media (min-width: 1100px) and (min-height: 700px) {
+  .page { position: relative; }
+  .complexity-lab {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 1.25%;
+    right: 1.25%;
+    margin-top: 0;
+  }
+  .testcase-buttons { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+  .testcase-buttons::-webkit-scrollbar { display: none; }
+}
