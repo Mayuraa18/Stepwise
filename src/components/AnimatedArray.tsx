@@ -125,6 +125,7 @@ export default class AnimatedArray extends Component<
               className={[
                 "array-value",
                 currentIndex === index ? "selected" : "",
+                pointerLabels[index]?.includes("write") && currentIndex !== index ? "write-target" : "",
                 matchedIndexes.includes(index) ? "matched" : "",
                 activeRange && index >= activeRange[0] && index <= activeRange[1]
                   ? "in-range" : "",
