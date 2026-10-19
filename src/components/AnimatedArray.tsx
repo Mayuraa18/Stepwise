@@ -6,6 +6,7 @@ type AnimatedArrayProps = {
   currentIndex: number | null;
   activeRange?: [number, number];
   matchedIndexes?: number[];
+  pointerLabels?: Record<number, string[]>;
   label?: string;
 };
 
@@ -93,7 +94,7 @@ export default class AnimatedArray extends Component<
 
   render() {
     const {
-      values, currentIndex, activeRange, matchedIndexes = [],
+      values, currentIndex, activeRange, matchedIndexes = [], pointerLabels = {},
       label = "Algorithm state array",
     } = this.props;
 
@@ -115,10 +116,16 @@ export default class AnimatedArray extends Component<
             className="array-item animated-array-item"
             key={token.id}
           >
+            <div className="array-pointer-labels" aria-label={pointerLabels[index]?.join(", ") || undefined}>
+              {(pointerLabels[index] ?? []).map((pointer) => (
+                <span className="array-pointer" key={pointer}>{pointer}</span>
+              ))}
+            </div>
             <div
               className={[
                 "array-value",
                 currentIndex === index ? "selected" : "",
+                pointerLabels[index]?.includes("write") && currentIndex !== index ? "write-target" : "",
                 matchedIndexes.includes(index) ? "matched" : "",
                 activeRange && index >= activeRange[0] && index <= activeRange[1]
                   ? "in-range" : "",

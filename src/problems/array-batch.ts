@@ -140,47 +140,72 @@ function moveZeroesSteps({ nums: input }: Input): ExecutionStep<State>[] {
   steps.push({
     id: "initialize",
     codeLine: 2,
-    pseudocodeLine: 1,
+    pseudocodeLine: 0,
     title: "Initialize the write pointer",
-    explanation: "The write pointer marks where the next non-zero value belongs.",
+    explanation: "write = 0 marks the first position where a non-zero value can be placed.",
     state: snapshot(null, null),
   });
 
   for (let i = 0; i < nums.length; i++) {
     const value = nums[i];
-    if (value !== 0) {
-      if (i !== write) {
-        nums[write] = value;
-        nums[i] = 0;
-        [itemIds[write], itemIds[i]] = [itemIds[i], itemIds[write]];
-      }
-      steps.push({
-        id: `move-${i}`,
-        codeLine: 5,
-        pseudocodeLine: 3,
-        title: `Place ${value} before the zeros`,
-        explanation: `${value} is non-zero. Move it to the write position while preserving non-zero order.`,
-        state: snapshot(i, value),
-      });
-      write++;
-    } else {
+
+    steps.push({
+      id: `inspect-${i}`,
+      codeLine: 3,
+      pseudocodeLine: 1,
+      title: `Inspect index ${i}`,
+      explanation: `Read nums[${i}] = ${value}. The scan pointer i is at index ${i}, and write = ${write} marks the next non-zero position.`,
+      state: snapshot(i, value),
+    });
+
+    if (value === 0) {
       steps.push({
         id: `zero-${i}`,
         codeLine: 4,
         pseudocodeLine: 2,
-        title: "Inspect zero",
-        explanation: "Zero is skipped; non-zero values are placed first.",
+        title: `Keep zero at index ${i} for now`,
+        explanation: `nums[${i}] is 0, so it is skipped. No values move and write stays at ${write}; the next non-zero value can use this position.`,
         state: snapshot(i, value),
       });
+      continue;
     }
+
+    const destination = write;
+    if (i !== destination) {
+      [nums[destination], nums[i]] = [nums[i], nums[destination]];
+      [itemIds[destination], itemIds[i]] = [itemIds[i], itemIds[destination]];
+    }
+
+    steps.push({
+      id: `place-${i}`,
+      codeLine: 5,
+      pseudocodeLine: 2,
+      title: i === destination
+        ? `Keep ${value} at index ${destination}`
+        : `Move ${value} from index ${i} to index ${destination}`,
+      explanation: i === destination
+        ? `${value} is already at the write position, so its value and position stay the same.`
+        : `${value} is non-zero, so it moves from index ${i} to write index ${destination}. The displaced value moves to index ${i}; non-zero order is preserved.`,
+      state: snapshot(i, value),
+    });
+
+    write++;
+    steps.push({
+      id: `advance-${i}`,
+      codeLine: 6,
+      pseudocodeLine: 2,
+      title: `Advance write to ${write}`,
+      explanation: `Index ${destination} now contains a non-zero value. Advance write to ${write}, the next position for a non-zero value.`,
+      state: snapshot(i, value),
+    });
   }
 
   steps.push({
     id: "complete",
-    codeLine: 7,
-    pseudocodeLine: 4,
+    codeLine: 3,
+    pseudocodeLine: 3,
     title: "All zeros moved to the end",
-    explanation: "The non-zero values retain their original relative order.",
+    explanation: `The array is now [${nums.join(", ")}]. Non-zero values retain their original relative order, and the remaining positions contain zeros.`,
     state: snapshot(null, null, [...nums]),
   });
   return steps;
@@ -288,7 +313,10 @@ export const moveZeroesProblem: ProblemDefinition<Input, number[], State> = {
       "void moveZeroes(vector<int>& nums) {",
       "    int write = 0;",
       "    for (int i = 0; i < nums.size(); i++) {",
-      "        if (nums[i] != 0) swap(nums[write++], nums[i]);",
+      "        if (nums[i] != 0) {",
+      "            swap(nums[write], nums[i]);",
+      "            write++;",
+      "        }",
       "    }",
       "}",
     ],
@@ -297,9 +325,7 @@ export const moveZeroesProblem: ProblemDefinition<Input, number[], State> = {
       "    int write = 0;",
       "    for (int i = 0; i < nums.length; i++) {",
       "        if (nums[i] != 0) {",
-      "            int temp = nums[write];",
-      "            nums[write] = nums[i];",
-      "            nums[i] = temp;",
+      "            int temp = nums[write]; nums[write] = nums[i]; nums[i] = temp;",
       "            write++;",
       "        }",
       "    }",
