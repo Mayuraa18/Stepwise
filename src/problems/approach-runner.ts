@@ -81,12 +81,41 @@ function makeStep(
 }
 
 function parseNums(raw: string): number[] {
+  // Prefer the problem's named numeric array when inputs use the catalog's JSON format.
+  // Falling back to the legacy free-form syntax keeps existing examples compatible.
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      const record = parsed as Record<string, unknown>;
+      for (const key of ["nums", "prices", "values", "array", "list"]) {
+        const value = record[key];
+        if (Array.isArray(value) && value.every(
+          (item): item is number => typeof item === "number" && Number.isFinite(item),
+        )) return [...value];
+      }
+    }
+    if (Array.isArray(parsed) && parsed.every(
+      (item): item is number => typeof item === "number" && Number.isFinite(item),
+    )) return [...parsed];
+  } catch {
+    // Free-form inputs are supported below; malformed JSON is not executed.
+  }
+
   const prefix = raw.split(/;\s*target\s*:/i)[0];
   const match = prefix.match(/-?\d+(?:\.\d+)?/g);
-  return match ? match.map(Number) : [];
+  return match ? match.map(Number).filter(Number.isFinite) : [];
 }
 function parseTarget(raw: string): number {
-  const match = raw.match(/target\s*:\s*(-?\d+(?:\.\d+)?)/i);
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      const target = (parsed as Record<string, unknown>).target;
+      if (typeof target === "number" && Number.isFinite(target)) return target;
+    }
+  } catch {
+    // Continue with the legacy free-form syntax.
+  }
+  const match = raw.match(/["']?target["']?\s*:\s*(-?\d+(?:\.\d+)?)/i);
   return match ? Number(match[1]) : Number.NaN;
 }
 
@@ -182,25 +211,28 @@ export function getBruteForceSteps(id: string, raw: string): VisualStep[] {
   if (id === "26") {
     const unique: number[] = [];
     for (let i = 0; i < nums.length; i++) {
-      if (!unique.includes(nums[i])) unique.push(nums[i]);
+      const isDuplicate = unique.includes(nums[i]);
+      if (!isDuplicate) unique.push(nums[i]);
       push(`Inspect ${nums[i]}`,
-        `${unique.includes(nums[i]) ? "Keep one copy" : "Skip duplicate"} of ${nums[i]} using temporary storage.`,
-        [...unique, ...nums.slice(i + 1)], i,
-        [{label:"unique count",value:String(unique.length)}],
+        `${isDuplicate ? "Skip the duplicate" : "Keep the first copy"} of ${nums[i]} in temporary storage.`,
+        nums, i,
+        [{label:"i",value:String(i)},{label:"unique count",value:String(unique.length)}],
         null, unique.map((value,index)=>({label:String(index),value:String(value)})), 1);
     }
-    push("Write unique values", `There are ${unique.length} unique values.`, [...unique, ...nums.slice(unique.length)],
-      null, [{label:"k",value:String(unique.length)}], String(unique.length), [], 3);
+    push("Unique values collected", `There are ${unique.length} unique values.`, nums,
+      null, [{label:"k",value:String(unique.length)}], String(unique.length),
+      unique.map((value,index)=>({label:String(index),value:String(value)})), 3);
     return steps;
   }
 
   if (id === "283") {
-    const output = nums.filter(value => value !== 0);
+    const output: number[] = [];
     for (let i = 0; i < nums.length; i++) {
+      if (nums[i] !== 0) output.push(nums[i]);
       push(`Inspect index ${i}`, nums[i] === 0
         ? "This value is zero, so defer it until after the nonzero values."
         : `Copy nonzero value ${nums[i]} to temporary storage.`,
-        nums, i, [{label:"i",value:String(i)}],
+        nums, i, [{label:"i",value:String(i)},{label:"nonzero count",value:String(output.length)}],
         null, output.map((value,index)=>({label:String(index),value:String(value)})), 1);
     }
     const result = [...output, ...Array(nums.length - output.length).fill(0)];
@@ -210,35 +242,41 @@ export function getBruteForceSteps(id: string, raw: string): VisualStep[] {
   }
 
   if (id === "206") {
-    const reversed = [...nums].reverse();
+    const reversed: number[] = [];
     for (let i = nums.length - 1; i >= 0; i--) {
+      reversed.push(nums[i]);
       push(`Read value at ${i}`, `Copy ${nums[i]} into auxiliary storage in reverse traversal order.`,
-        nums, i, [{label:"i",value:String(i)}],
-        null, reversed.slice(nums.length - 1 - i).map((value,index)=>({label:String(index),value:String(value)})), 1);
+        nums, i, [{label:"i",value:String(i)},{label:"copied",value:String(reversed.length)}],
+        null, reversed.map((value,index)=>({label:String(index),value:String(value)})), 1);
     }
-    push("Reversed list ready", "The values are read in reverse order and can be used to construct the reversed list.",
+    push("Reversed list ready", "The values have been copied in reverse order.",
       reversed, null, [], JSON.stringify(reversed), [], 3);
     return steps;
   }
 
   if (id === "20") {
-    const source = raw.trim().replace(/^["']|["']$/g, "");
-    const stack: string[] = [];
-    const pairs: Record<string,string> = {")":"(","]":"[","}":"{"};
-    for (let i = 0; i < source.length; i++) {
-      const char = source[i];
-      if ("([{".includes(char)) stack.push(char);
-      else if (")]}" .includes(char)) {
-        const index = stack.lastIndexOf(pairs[char]);
-        if (index >= 0) stack.splice(index, 1);
-      }
-      push(`Inspect character ${i}`, `Read '${char}'. The baseline repeatedly searches and removes matching bracket pairs.`,
-        nums, i, [{label:"character",value:char},{label:"position",value:String(i)}],
-        null, stack.map((value,index)=>({label:String(index),value})), 1);
+    // Baseline strategy: repeatedly remove adjacent matching pairs. Unlike a stack,
+    // this intentionally demonstrates the O(n²) approach while preserving bracket order.
+    let remaining = raw.trim().replace(/^["']|["']$/g, "");
+    const pairPattern = /\(\)|\[\]|\{\}/g;
+    let pass = 0;
+    while (true) {
+      const next = remaining.replace(pairPattern, "");
+      push(`Remove matching pairs (pass ${pass + 1})`,
+        next.length < remaining.length
+          ? "Remove adjacent matching bracket pairs and repeat on the remaining string."
+          : "No adjacent matching pairs remain.",
+        nums, null, [{label:"pass",value:String(pass + 1)},{label:"remaining",value:String(next.length)}],
+        null, [...next].map((value,index)=>({label:String(index),value})), 1);
+      if (next === remaining) break;
+      remaining = next;
+      pass++;
     }
-    const valid = stack.length === 0 && source.length > 0;
-    push("Bracket scan complete", `Remaining unmatched opening brackets: ${stack.length}.`,
-      nums, null, [], String(valid), stack.map((value,index)=>({label:String(index),value})), 3);
+    const valid = remaining.length === 0 && raw.trim().length > 0;
+    push("Bracket reduction complete", valid
+      ? "Every bracket was removed in a correctly nested pair."
+      : `Unmatched or misordered characters remain: ${remaining || "(empty input)"}.`,
+      nums, null, [], String(valid), [...remaining].map((value,index)=>({label:String(index),value})), 3);
     return steps;
   }
 
