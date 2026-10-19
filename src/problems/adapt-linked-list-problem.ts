@@ -24,6 +24,29 @@ type LinkedListState = {
   result: number[] | null;
 };
 
+function nodesForVisualization(state: LinkedListState): LinkedListNode[] {
+  // During execution, keep node positions stable so pointer changes are easy to follow.
+  // Once reversal is complete, lay the nodes out from the new head to show the actual result.
+  if (state.currentId !== null || state.previousId === null) {
+    return state.nodes;
+  }
+
+  const byId = new Map(state.nodes.map((node) => [node.id, node]));
+  const ordered: LinkedListNode[] = [];
+  const visited = new Set<string>();
+  let cursor: string | null = state.previousId;
+
+  while (cursor !== null && !visited.has(cursor)) {
+    const node = byId.get(cursor);
+    if (!node) break;
+    ordered.push(node);
+    visited.add(cursor);
+    cursor = node.nextId;
+  }
+
+  return ordered.length === state.nodes.length ? ordered : state.nodes;
+}
+
 export function adaptLinkedListProblem<
   Input extends LinkedListInput,
   Output,
@@ -67,7 +90,7 @@ export function adaptLinkedListProblem<
         })),
       getResult: (state) => state.result,
       getVisualization: (state) => ({
-        items: state.nodes.map((node) => ({
+        items: nodesForVisualization(state).map((node) => ({
           id: node.id,
           label: node.id,
           value: String(node.value),
