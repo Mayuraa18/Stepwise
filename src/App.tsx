@@ -650,17 +650,32 @@ export default function App() {
               <div className="section-label">{problem.visualization.stateLabel}</div>
 
               {problem.visualization.kind === "array" ? (
-                <AnimatedArray
-                  values={step.array}
-                  itemIds={step.visualization?.items?.map((item) => item.id)}
-                  currentIndex={step.currentIndex}
-                  activeRange={step.activeRange}
-                  matchedIndexes={step.visualization?.pointers
-                    ? [...new Set(Object.values(step.visualization.pointers)
-                        .filter((value): value is number => typeof value === "number"))]
-                    : []}
-                  label="Live algorithm state"
-                />
+                <>
+                  <AnimatedArray
+                    values={step.array}
+                    itemIds={step.visualization?.items?.map((item) => item.id)}
+                    currentIndex={step.currentIndex}
+                    activeRange={step.activeRange}
+                    matchedIndexes={step.visualization?.pointers
+                      ? [...new Set(Object.values(step.visualization.pointers)
+                          .filter((value): value is number => typeof value === "number"))]
+                      : []}
+                    label="Live algorithm state"
+                  />
+                  {(problem.id === "1" || problem.id === "217") && (
+                    <div className="array-auxiliary-state">
+                      <div className="section-label">
+                        {problem.id === "1" ? "Hash map · value → index" : "Seen set"}
+                      </div>
+                      <VisualizationRenderer
+                        kind="hash-map"
+                        data={step.visualization}
+                        fallbackItems={step.memory}
+                        emptyStateLabel={problem.id === "1" ? "Hash map is empty" : "Set is empty"}
+                      />
+                    </div>
+                  )}
+                </>
               ) : (
                 <VisualizationRenderer
                   kind={problem.visualization.kind}
