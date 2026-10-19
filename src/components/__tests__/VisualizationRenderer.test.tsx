@@ -116,6 +116,22 @@ describe("VisualizationRenderer", () => {
     expect(html).toContain("true");
   });
 
+  it("renders seen-set entries as values rather than key-value pairs", () => {
+    const html = renderRenderer({
+      kind: "hash-map",
+      data: {
+        entries: [
+          { id: "set-0", label: "Set 1", value: "4" },
+          { id: "set-1", label: "Set 2", value: "9" },
+        ],
+      },
+    });
+
+    expect(html).toContain(">4</span>");
+    expect(html).toContain(">9</span>");
+    expect(html).not.toContain("Set 1 → 4");
+  });
+
   it("renders linked-list nodes and their connections", () => {
     const html = renderRenderer({
       kind: "linked-list",
