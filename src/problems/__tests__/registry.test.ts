@@ -28,6 +28,11 @@ const validCases = [
     expectedResult: "Valid bracket sequence",
   },
   {
+    id: "206",
+    input: "1, 2, 3, 4, 5",
+    expectedResult: "[5,4,3,2,1]",
+  },
+  {
     id: "217",
     input: "1, 2, 3, 1",
     expectedResult: "true",
@@ -45,6 +50,22 @@ const validCases = [
 ];
 
 describe("UI-facing problem registry", () => {
+  it("preserves moving item identities while Move Zeroes updates the state", () => {
+    const problem = modularProblems.find((item) => item.id === "283");
+    if (!problem) throw new Error("Move Zeroes is not registered");
+
+    const steps = problem.run("0, 1, 0, 3, 12");
+    const firstIds = steps[0]?.visualization?.items?.map((item) => item.id);
+    const moveOne = steps.find((step) => step.title === "Place 1 before the zeros");
+    const finalStep = steps.at(-1);
+
+    expect(firstIds).toEqual(["item-0", "item-1", "item-2", "item-3", "item-4"]);
+    expect(moveOne?.array).toEqual([1, 0, 0, 3, 12]);
+    expect(moveOne?.visualization?.items?.map((item) => item.id)?.[0]).toBe("item-1");
+    expect(finalStep?.array).toEqual([1, 3, 12, 0, 0]);
+    expect(finalStep?.result).toBe("[1,3,12,0,0]");
+  });
+
   it("registers all nine unique problems", () => {
   expect(modularProblems).toHaveLength(9);
   expect(new Set(modularProblems.map((problem) => problem.id)).size)
@@ -73,9 +94,28 @@ describe("UI-facing problem registry", () => {
         expect(Array.isArray(step.memory)).toBe(true);
         expect(typeof step.line).toBe("number");
         expect(typeof step.pseudocodeLine).toBe("number");
+
+        if (problem.visualization.kind === "array") {
+          expect(step.visualization?.items?.map((item) => item.value)).toEqual(
+            step.array.map(String),
+          );
+        }
       }
 
+      // Running a trace must not mutate the source input shown in the fixed input panel.
+      expect(problem.parse(input).array).toEqual(parsed.array);
       expect(steps.at(-1)?.result).toBe(expectedResult);
+
+      if (id === "206") {
+        expect(steps.at(-1)?.visualization?.items?.map((item) => item.value))
+          .toEqual(["5", "4", "3", "2", "1"]);
+        expect(steps.at(-1)?.visualization?.edges).toEqual([
+          ["node-4", "node-3"],
+          ["node-3", "node-2"],
+          ["node-2", "node-1"],
+          ["node-1", "node-0"],
+        ]);
+      }
     },
   );
 
