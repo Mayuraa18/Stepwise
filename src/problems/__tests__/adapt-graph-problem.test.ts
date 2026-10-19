@@ -49,7 +49,7 @@ const definition: ProblemDefinition<GraphInput, number, GraphState> = {
   createSteps: (value) => {
     const snapshot = (currentNodeId: string | null, visited: string[], result: unknown): GraphState => ({
       nodes: value.nodes.map((node) => ({ ...node })),
-      edges: value.edges.map(([from, to]) => [from, to]),
+      edges: value.edges.map(([from, to]) => [from, to] as [string, string]),
       currentNodeId,
       visited: [...visited],
       result,
