@@ -104,5 +104,77 @@
       }
     ],
     "visualizerId": "20"
+  },
+  {
+    "id": "contains-duplicate",
+    "title": "Contains Duplicate",
+    "difficulty": "Easy",
+    "tags": [
+      "Array",
+      "Hash Table"
+    ],
+    "description": "Determine whether any value appears at least twice in an array.",
+    "constraints": [
+      "1 <= nums.length <= 10^5",
+      "Each value is a safe integer."
+    ],
+    "examples": [
+      {
+        "input": "nums = [1, 2, 3, 1]",
+        "output": "true",
+        "explanation": "The number 1 appears twice."
+      },
+      {
+        "input": "nums = [1, 2, 3, 4]",
+        "output": "false",
+        "explanation": "Every number appears exactly once."
+      }
+    ],
+    "visualizerId": "217"
+  },
+  {
+    "id": "remove-duplicates-sorted-array",
+    "title": "Remove Duplicates from Sorted Array",
+    "difficulty": "Easy",
+    "tags": [
+      "Array",
+      "Two Pointers"
+    ],
+    "description": "Remove duplicate values in-place from a sorted array and return the number of unique values.",
+    "constraints": [
+      "1 <= nums.length <= 10^5",
+      "Each value is a safe integer.",
+      "nums is sorted in non-decreasing order."
+    ],
+    "examples": [
+      {
+        "input": "nums = [1, 1, 2]",
+        "output": "2, nums = [1, 2, _]",
+        "explanation": "The first two positions contain 1 and 2."
+      }
+    ],
+    "visualizerId": "26"
+  },
+  {
+    "id": "move-zeroes",
+    "title": "Move Zeroes",
+    "difficulty": "Easy",
+    "tags": [
+      "Array",
+      "Two Pointers"
+    ],
+    "description": "Move all zeros to the end of the array while preserving the relative order of non-zero values.",
+    "constraints": [
+      "1 <= nums.length <= 10^5",
+      "Each value is a safe integer."
+    ],
+    "examples": [
+      {
+        "input": "nums = [0, 1, 0, 3, 12]",
+        "output": "[1, 3, 12, 0, 0]",
+        "explanation": "Non-zero values stay in their original order."
+      }
+    ],
+    "visualizerId": "283"
   }
 ]
