@@ -96,7 +96,7 @@ export function adaptGraphProblem<
         };
       }),
       getResult: (state) => state.result,
-      getStack: (state) => state.stack,
+      getStack: (state) => state.stack ?? [],
       getVisualization: (state) => {
         validateSnapshot(state);
         return {
