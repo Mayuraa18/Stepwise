@@ -2241,3 +2241,8 @@ button:not(:disabled):active {
   .playback-bar { margin-inline: 12px; padding: 10px; }
   .playback-meta { font-size: 9px; }
 }
+
+.array-value.write-target {
+  border: 2px dashed var(--accent-color);
+  background: var(--active-bg);
+}
