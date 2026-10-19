@@ -1,10 +1,9 @@
 import type {
-  ExecutionStep,
   Problem,
   ProblemDefinition,
   VisualizationKind,
 } from "../engine/types.ts";
-import { createVisualTrace, formatTraceValue } from "../engine/trace.ts";
+import { createVisualTrace } from "../engine/trace.ts";
 
 export type GraphNode = {
   id: string;
