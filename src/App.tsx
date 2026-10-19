@@ -219,6 +219,16 @@ export default function App() {
   const executionError = execution.error;
   const step = steps[Math.min(stepIndex, Math.max(steps.length-1,0))];
 
+  // The input/test-case panel is immutable during playback. Only the algorithm-state
+  // visualizer below follows each trace snapshot.
+  const fixedInputArray = useMemo(() => {
+    try {
+      return problem.parse(input).array;
+    } catch {
+      return [];
+    }
+  }, [problem, input]);
+
   const previousStep = stepIndex > 0 ? steps[stepIndex - 1] : undefined;
   const changeInsight = (() => {
     if (!step) return "";
@@ -633,7 +643,7 @@ export default function App() {
 
               {problem.visualization.kind === "string" ? <div className="bracket-string">{input.trim().split("").map((c,i)=><span key={i} className={step.currentIndex===i?"selected":""}>{c}</span>)}</div> :
 
-              <div className="array" style={{gridTemplateColumns:`repeat(${Math.min(Math.max(step.array.length,1),8)}, minmax(0,1fr))`}}>{step.array.map((num,i)=><div className="array-item" key={i}><div className="array-value">{num}</div><span className="array-index">index {i}</span></div>)}</div>}
+              <div className="array" style={{gridTemplateColumns:`repeat(${Math.min(Math.max(fixedInputArray.length,1),8)}, minmax(0,1fr))`}}>{fixedInputArray.map((num,i)=><div className="array-item" key={i}><div className="array-value">{num}</div><span className="array-index">index {i}</span></div>)}</div>}
 
               <div className="metrics">{step.variables.map(v=><div className="metric" key={v.label}><span>{v.label}</span><strong>{v.value}</strong></div>)}</div>
 
