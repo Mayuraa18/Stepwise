@@ -96,7 +96,7 @@ export function adaptLinkedListProblem<
           value: String(node.value),
           active: node.id === state.currentId,
         })),
-        edges: state.nodes.flatMap((node) =>
+        edges: nodesForVisualization(state).flatMap((node) =>
           node.nextId === null
             ? []
             : [[node.id, node.nextId] as [string, string]],
