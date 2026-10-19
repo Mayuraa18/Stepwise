@@ -1871,3 +1871,177 @@ button:not(:disabled):active {
     flex-basis: 100px;
   }
 }
+
+
+/* UI refinement: compact panels and balanced complexity layout */
+.complexity-details {
+  align-items: start;
+}
+
+.complexity-details > article {
+  align-self: start;
+  min-width: 0;
+}
+
+.complexity-details .growth-visual {
+  min-width: 0;
+}
+
+.complexity-details .growth-visual > div {
+  min-width: 0;
+}
+
+.testcase-selector .testcase-button {
+  max-width: 100%;
+}
+
+.custom-input textarea {
+  min-height: 48px;
+}
+
+.workspace {
+  align-items: start;
+}
+
+.workspace > .panel {
+  align-self: start;
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .complexity-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .complexity-details > article {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+
+/* LeetVisual: polished approach selector */
+.approach-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  min-width: 260px;
+  padding: 5px;
+  border: 1px solid var(--border-color, #d6e4d8);
+  border-radius: 13px;
+  background: var(--panel-muted, #edf4ee);
+}
+
+.approach-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease,
+    box-shadow 160ms ease, transform 160ms ease;
+}
+
+.approach-option:hover {
+  background: rgb(255 255 255 / 70%);
+}
+
+.approach-option:active {
+  transform: scale(0.985);
+}
+
+.approach-option.is-selected {
+  border-color: #83bd8c;
+  background: #fff;
+  box-shadow: 0 2px 8px rgb(32 83 42 / 9%);
+}
+
+.approach-option-title {
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.approach-option-complexity {
+  font-size: 10px;
+  line-height: 1.45;
+  opacity: 0.75;
+}
+
+.approach-option.is-selected .approach-option-title {
+  color: #23743b;
+}
+
+.approach-option:focus-visible {
+  outline: 2px solid #39834a;
+  outline-offset: 2px;
+}
+
+/* Additional insight, deliberately separate from the step explanation */
+.change-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color, #dce8de);
+  border-radius: 11px;
+  background: var(--panel-muted, #f5f8f5);
+}
+
+.change-insight-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 27px;
+  width: 27px;
+  height: 27px;
+  border-radius: 8px;
+  background: #e0f1e3;
+  color: #23743b;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.change-insight-content {
+  min-width: 0;
+}
+
+.change-insight-title {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+  opacity: 0.78;
+}
+
+.change-insight-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+@media (max-width: 620px) {
+  .approach-switch {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .approach-option {
+    padding: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .approach-option {
+    transition: none;
+  }
+}

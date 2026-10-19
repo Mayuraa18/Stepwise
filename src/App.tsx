@@ -8,6 +8,11 @@ import rawCatalog from "../data/catalog.json";
 import { loadCatalog } from "./catalog/load-catalog.ts";
 import { integrateCatalog } from "./catalog/integrate-catalog.ts";
 import VisualizationRenderer from "./components/VisualizationRenderer.tsx";
+import AnimatedArray from "./components/AnimatedArray.tsx";
+import { getBruteForceSteps, getApproachMetadata } from "./problems/approach-runner.ts";
+type AlgorithmApproach = "brute-force" | "optimal";
+import { getRemoveDuplicatesSteps } from "./problems/remove-duplicates-approaches.ts";
+
 
 const catalog = loadCatalog(rawCatalog);
 const problems: Problem[] = integrateCatalog(catalog, modularProblems);
@@ -121,6 +126,7 @@ export default function App() {
   const [language, setLanguage] = useState<Language>("Python");
 
   const [stepIndex, setStepIndex] = useState(0);
+  const [algorithmApproach, setAlgorithmApproach] = useState<AlgorithmApproach>("optimal");
 
   const [input, setInput] = useState(problems[0].defaultInput);
 
@@ -169,21 +175,102 @@ export default function App() {
     });
   }, [problemQuery, difficultyFilter, topicFilter]);
 
+  const approachMetadata = algorithmApproach === "brute-force"
+    ? getApproachMetadata(problem.id, algorithmApproach)
+    : problem.id === "26"
+      ? getApproachMetadata(problem.id, algorithmApproach)
+      : null;
+
   const execution = useMemo(() => {
     try {
-      return { steps: problem.run(input), error: "" };
+      const generatedSteps: VisualStep[] = algorithmApproach === "brute-force"
+        ? getBruteForceSteps(problem.id, input)
+        : problem.id === "26"
+          ? getRemoveDuplicatesSteps(input, "optimal").map((item) => ({
+              title: item.title,
+              explanation: item.explanation,
+              line: item.codeLine,
+              pseudocodeLine: item.pseudocodeLine,
+              currentIndex: item.state.currentIndex,
+              array: [...item.state.nums],
+              variables: [
+                ...(item.state.i === null ? [] : [{ label: "i", value: String(item.state.i) }]),
+                ...(item.state.j === null ? [] : [{ label: "j", value: String(item.state.j) }]),
+                ...(item.state.result === null ? [] : [{ label: "k", value: String(item.state.result) }]),
+              ],
+              memory: [],
+              result: item.state.result === null ? null : String(item.state.result),
+              visualization: {
+                items: item.state.nums.map((value, index) => ({
+                  id: item.state.arrayItemIds[index], label: `index ${index}`,
+                  value: String(value), active: item.state.currentIndex === index,
+                })),
+                pointers: item.state.pointers,
+              },
+            }))
+          : problem.run(input);
+      return { steps: generatedSteps, error: "" };
     } catch (err) {
-      return {
-        steps: [],
-        error: err instanceof Error
-          ? err.message
-          : "Could not generate visualization.",
-      };
+      return { steps: [], error: err instanceof Error ? err.message : "Could not generate visualization." };
     }
-  }, [problem, input]);
+  }, [problem, input, algorithmApproach]);
+
   const steps = execution.steps;
   const executionError = execution.error;
   const step = steps[Math.min(stepIndex, Math.max(steps.length-1,0))];
+
+  const previousStep = stepIndex > 0 ? steps[stepIndex - 1] : undefined;
+  const changeInsight = (() => {
+    if (!step) return "";
+    if (!previousStep) {
+      return step.array.length
+        ? `Starting state: ${step.array.length} array positions are available to inspect. Follow the highlighted cells and pointer values as execution progresses.`
+        : `This is the initial state. Watch how the next operation changes the data structure and its tracked values.`;
+    }
+
+    const changes: string[] = [];
+    const previousArray = previousStep.array ?? [];
+    const currentArray = step.array ?? [];
+    const changedIndexes = new Set<number>();
+
+    for (let index = 0; index < Math.max(previousArray.length, currentArray.length); index++) {
+      if (previousArray[index] !== currentArray[index]) {
+        changedIndexes.add(index);
+      }
+    }
+
+    if (changedIndexes.size > 0) {
+      const details = [...changedIndexes].slice(0, 4).map((index) => {
+        const before = index < previousArray.length ? String(previousArray[index]) : "empty";
+        const after = index < currentArray.length ? String(currentArray[index]) : "empty";
+        return `index ${index}: ${before} → ${after}`;
+      });
+      changes.push(`Array update — ${details.join("; ")}${changedIndexes.size > 4 ? `; and ${changedIndexes.size - 4} more position(s)` : ""}.`);
+    }
+
+    const previousVariables = new Map(
+      (previousStep.variables ?? []).map((variable) => [variable.label, variable.value])
+    );
+    const movedVariables = (step.variables ?? [])
+      .filter((variable) => previousVariables.has(variable.label) &&
+        previousVariables.get(variable.label) !== variable.value)
+      .map((variable) => `${variable.label} moved from ${previousVariables.get(variable.label)} to ${variable.value}`);
+
+    if (movedVariables.length) {
+      changes.push(`Pointer/variable movement — ${movedVariables.join("; ")}.`);
+    }
+
+    if (step.result !== previousStep.result && step.result) {
+      changes.push(`Result update — ${step.result}.`);
+    }
+
+    if (changes.length === 0) {
+      changes.push("The stored values stayed the same in this transition. The algorithm's decision or scan position changed, so check the active pointers and current step.");
+    }
+
+    return changes.join(" ");
+  })();
+
   const highlightedLine = step ? lineFor(step, language, problem) : 1;
 
   // First-visit reveal: small stagger, no oversized movement or distracting loops.
@@ -485,7 +572,7 @@ export default function App() {
 
           <section className="pseudocode-section"><div className="panel-header"><span>1. Understand the pseudocode first</span><div className="zoom-controls"><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={pseudocodeZoom<=.8}>A−</button><button type="button" onClick={()=>setPseudocodeZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={pseudocodeZoom>=1.4}>A+</button></div></div>
 
-            <div className="pseudocode-content" style={{zoom:pseudocodeZoom}}><div className="pseudocode-intro">Try to explain each step in your own words before looking at the implementation.</div><div className="pseudocode">{problem.pseudocode.map((line,i)=><div className={`pseudo-line ${step?.pseudocodeLine===i?"pseudo-active":""}`} key={line}><span>{i+1}</span><code>{line}</code></div>)}</div></div>
+            <div className="pseudocode-content" style={{zoom:pseudocodeZoom}}><div className="pseudocode-intro">Try to explain each step in your own words before looking at the implementation.</div><div className="pseudocode">{((approachMetadata?.pseudocode ?? problem.pseudocode) as readonly string[]).map((line,i)=><div className={`pseudo-line ${step?.pseudocodeLine===i?"pseudo-active":""}`} key={`${i}-${line}`}><span>{i+1}</span><code>{line}</code></div>)}</div></div>
 
           </section>
 
@@ -499,28 +586,79 @@ export default function App() {
 
 
 
-        <div className="panel visual-panel"><div className="panel-header"><span>Execution visualizer</span><div className="visualizer-header-actions"><div className="zoom-controls"><button type="button" onClick={()=>setVisualizerZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={visualizerZoom<=.8}>A−</button><button type="button" onClick={()=>setVisualizerZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={visualizerZoom>=1.4}>A+</button></div><span className="step-count">{steps.length?stepIndex+1:0} / {steps.length}</span></div></div>
+        <div className="panel visual-panel"><div className="panel-header"><span>Execution visualizer</span><div className="visualizer-header-actions"><div className="zoom-controls"><button type="button" onClick={()=>setVisualizerZoom(z=>Math.max(.8,Math.round((z-.1)*10)/10))} disabled={visualizerZoom<=.8}>A−</button><button type="button" onClick={()=>setVisualizerZoom(z=>Math.min(1.4,Math.round((z+.1)*10)/10))} disabled={visualizerZoom>=1.4}>A+</button></div>{(
+  <div className="approach-switch" role="group" aria-label="Algorithm approach">
+      {(["brute-force", "optimal"] as const).map((approach) => {
+        const metadata = getApproachMetadata(problem.id, approach) ?? {
+          label: approach === "brute-force" ? "Brute force" : "Optimized",
+          time: problem.time,
+          space: problem.space,
+          pseudocode: problem.pseudocode,
+        };
+        const selected = algorithmApproach === approach;
+        return (
+          <button
+            key={approach}
+            type="button"
+            className={`approach-option${selected ? " is-selected" : ""}`}
+            aria-pressed={selected}
+            onClick={() => {
+              setAlgorithmApproach(approach);
+              setStepIndex(0);
+            }}
+          >
+            <span className="approach-option-title">{approach === "brute-force" ? "Brute force" : "Optimized"}</span>
+            <span className="approach-option-complexity">
+              Time {metadata.time} · Space {metadata.space}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+)}
+<span className="step-count">{steps.length?stepIndex+1:0} / {steps.length}</span></div></div>
 
           <div className="visualizer-content" style={{zoom:visualizerZoom}}>
 
-            {step?<><div className="step-content"><p className="eyebrow">CURRENT STEP</p><h3>{step.title}</h3><p className="explanation">{step.explanation}</p></div>
+            {step?<><div className="step-content"><p className="eyebrow">CURRENT STEP</p><h3>{step.title}</h3><p className="explanation">{step.explanation}</p>
+                  <aside className="change-insight" aria-live="polite">
+                    <span className="change-insight-icon" aria-hidden="true">↳</span>
+                    <div className="change-insight-content">
+                      <p className="change-insight-title">Change insight</p>
+                      <p className="change-insight-text">{changeInsight}</p>
+                    </div>
+                  </aside></div>
 
               <div className="section-label">{problem.visualization.inputLabel}</div>
 
               {problem.visualization.kind === "string" ? <div className="bracket-string">{input.trim().split("").map((c,i)=><span key={i} className={step.currentIndex===i?"selected":""}>{c}</span>)}</div> :
 
-              <div className="array" style={{gridTemplateColumns:`repeat(${Math.min(Math.max(step.array.length,1),8)}, minmax(0,1fr))`}}>{step.array.map((num,i)=><div className="array-item" key={i}><div className={`array-value ${step.currentIndex===i?"selected":""} ${step.result&&step.result.includes(`index ${i}`)?"matched":""} ${step.activeRange&&i>=step.activeRange[0]&&i<=step.activeRange[1]?"in-range":""}`}>{num}</div><span className="array-index">index {i}</span></div>)}</div>}
+              <div className="array" style={{gridTemplateColumns:`repeat(${Math.min(Math.max(step.array.length,1),8)}, minmax(0,1fr))`}}>{step.array.map((num,i)=><div className="array-item" key={i}><div className="array-value">{num}</div><span className="array-index">index {i}</span></div>)}</div>}
 
               <div className="metrics">{step.variables.map(v=><div className="metric" key={v.label}><span>{v.label}</span><strong>{v.value}</strong></div>)}</div>
 
               <div className="section-label">{problem.visualization.stateLabel}</div>
 
-              <VisualizationRenderer
-              kind={problem.visualization.kind}
-              data={step.visualization}
-              fallbackItems={step.memory}
-              emptyStateLabel={problem.visualization.emptyStateLabel}
-              />
+              {problem.visualization.kind === "array" ? (
+                <AnimatedArray
+                  values={step.array}
+                  itemIds={step.visualization?.items?.map((item) => item.id)}
+                  currentIndex={step.currentIndex}
+                  activeRange={step.activeRange}
+                  matchedIndexes={step.visualization?.pointers
+                    ? [...new Set(Object.values(step.visualization.pointers)
+                        .filter((value): value is number => typeof value === "number"))]
+                    : []}
+                  label="Live algorithm state"
+                />
+              ) : (
+                <VisualizationRenderer
+                  kind={problem.visualization.kind}
+                  data={step.visualization}
+                  fallbackItems={step.memory}
+                  emptyStateLabel={problem.visualization.emptyStateLabel}
+                />
+              )}
 
 {step.result && (
   <div
@@ -579,7 +717,7 @@ export default function App() {
           </button>
         </div>
 
-        <div className="complexity-summary"><div><span>Time complexity</span><strong>{problem.time}</strong><p>{problem.timeWhy}</p></div><div><span>Space complexity</span><strong>{problem.space}</strong><p>{problem.spaceWhy}</p></div></div>
+        <div className="complexity-summary"><div><span>Time complexity</span><strong>{approachMetadata?.time ?? problem.time}</strong><p>{problem.timeWhy}</p></div><div><span>Space complexity</span><strong>{approachMetadata?.space ?? problem.space}</strong><p>{problem.spaceWhy}</p></div></div>
 
         {complexityOpen && <div className="complexity-details" id="complexity-learning-content"><div className="complexity-learning-intro"><strong>Let’s break it down</strong><p>Big-O describes how an algorithm’s work or extra memory grows as the input gets larger. The examples and chart below are learning aids, not measured runtime.</p></div><article><h3>Time growth</h3><p>{problem.bestCase}</p><p>{problem.averageCase}</p><p>{problem.worstCase}</p><div className="growth-visual" style={{ gap: 14 }}>
               <div style={{

@@ -6,7 +6,7 @@ describe("catalog data file", () => {
   it("loads and validates the real JSON catalog", () => {
     const catalog = loadCatalog(rawCatalog);
 
-    expect(catalog).toHaveLength(5);
-    expect(new Set(catalog.map((problem) => problem.id)).size).toBe(5);
+    expect(catalog).toHaveLength(8);
+    expect(new Set(catalog.map((problem) => problem.id)).size).toBe(8);
   });
 });

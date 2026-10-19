@@ -48,7 +48,7 @@ export function adaptArrayProblem<
     const inputArray = getArray(input);
 
     return createVisualTrace(definition.createSteps(input), {
-      getArray: () => inputArray,
+      getArray: (state) => state.nums ?? state.prices ?? inputArray,
       getCurrentIndex: (state) => state.currentIndex,
       getVariables: (state) =>
         Object.entries(state)
@@ -64,8 +64,38 @@ export function adaptArrayProblem<
             label,
             value: formatTraceValue(value),
           })),
-      getMemory: () => [],
+      getMemory: (state) => {
+        const seen = state.seen;
+
+        if (!Array.isArray(seen)) {
+          return [];
+        }
+
+        return seen.map((value, index) => ({
+          label: `Set ${index + 1}`,
+          value: formatTraceValue(value),
+        }));
+      },
       getResult: (state) => state.result,
+      getVisualization: (state) => {
+        const ids = state.arrayItemIds;
+        if (!Array.isArray(ids) || ids.length !== getArray(state).length) {
+          return {};
+        }
+
+        const pointerData = state.pointers;
+        return {
+          items: getArray(state).map((value, index) => ({
+            id: String(ids[index]),
+            label: `index ${index}`,
+            value: String(value),
+            active: state.currentIndex === index,
+          })),
+          ...(pointerData && typeof pointerData === "object"
+            ? { pointers: pointerData as Record<string, string | number | null> }
+            : {}),
+        };
+      },
     });
   }
 

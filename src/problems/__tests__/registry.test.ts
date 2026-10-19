@@ -27,13 +27,28 @@ const validCases = [
     input: "()[]{}",
     expectedResult: "Valid bracket sequence",
   },
+  {
+    id: "217",
+    input: "1, 2, 3, 1",
+    expectedResult: "true",
+  },
+  {
+    id: "26",
+    input: "0, 0, 1, 1, 2, 3, 3",
+    expectedResult: "4",
+  },
+  {
+    id: "283",
+    input: "0, 1, 0, 3, 12",
+    expectedResult: "[1,3,12,0,0]",
+  },
 ];
 
 describe("UI-facing problem registry", () => {
-  it("registers all six unique problems", () => {
-  expect(modularProblems).toHaveLength(6);
+  it("registers all nine unique problems", () => {
+  expect(modularProblems).toHaveLength(9);
   expect(new Set(modularProblems.map((problem) => problem.id)).size)
-    .toBe(6);
+    .toBe(9);
 });
 
   it.each(validCases)(
@@ -70,6 +85,8 @@ describe("UI-facing problem registry", () => {
     ["121", "7, -1, 5"],
     ["53", ""],
     ["20", "(abc)"],
+    ["26", "3, 1, 2"],
+    ["283", ""],
   ])("rejects invalid input for problem %s", (id, input) => {
     const problem = modularProblems.find((item) => item.id === id);
 

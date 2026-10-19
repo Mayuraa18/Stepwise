@@ -10,6 +10,11 @@ import { bestTimeToBuySellStockProblem } from "./best-time-to-buy-sell-stock.ts"
 import { maximumSubarrayProblem } from "./maximum-subarray.ts";
 import { validParenthesesProblem } from "./valid-parentheses.ts";
 import { reverseLinkedListProblem } from "./reverse-linked-list.ts";
+import { containsDuplicateProblem } from "./contains-duplicate.ts";
+import {
+  removeDuplicatesProblem,
+  moveZeroesProblem,
+} from "./array-batch.ts";
 
 export const modularProblems: Problem[] = [
   adaptProblem(twoSumProblem),
@@ -18,4 +23,7 @@ export const modularProblems: Problem[] = [
   adaptArrayProblem(maximumSubarrayProblem),
   adaptStringProblem(validParenthesesProblem),
   adaptLinkedListProblem(reverseLinkedListProblem),
+  adaptArrayProblem(containsDuplicateProblem),
+  adaptArrayProblem(removeDuplicatesProblem),
+  adaptArrayProblem(moveZeroesProblem),
 ];
